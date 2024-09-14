@@ -7,33 +7,35 @@ import { motion } from "framer-motion";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-const filters = ["Alle", "Amerikansk", "Italiensk", "Pizzamenyer"];
-
 export default function MenuPage() {
   const [categories, setCategories] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState("");
+  const [subCategories, setSubCategories] = useState([]);
   const [activeFilter, setActiveFilter] = useState("Alle");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Fetch categories and menu items
   useEffect(() => {
     fetch("api/categories").then((res) => {
       res.json().then((categories) => {
         setCategories(categories);
         if (categories.length > 0) {
           setActiveCategory(categories[0]._id);
+          setSubCategories(categories[0].subcategories || []);
         }
       });
     });
     fetch("api/menu-items").then((res) => {
       res.json().then((menuItems) => {
         setMenuItems(menuItems);
-        setFilteredItems(menuItems);
+        setFilteredItems(menuItems); // Initially show all items
       });
     });
   }, []);
 
+  // Filter menu items whenever category, subcategory (filter), or search term changes
   useEffect(() => {
     let filtered = menuItems;
 
@@ -42,7 +44,7 @@ export default function MenuPage() {
     }
 
     if (activeFilter !== "Alle") {
-      // Implement your filter logic here
+      filtered = filtered.filter((item) => item.subcategory === activeFilter);
     }
 
     if (searchTerm) {
@@ -57,14 +59,20 @@ export default function MenuPage() {
     setFilteredItems(filtered);
   }, [activeCategory, activeFilter, searchTerm, menuItems]);
 
+  // Handle category change
   const handleCategoryChange = (categoryId) => {
     setActiveCategory(categoryId);
+    const selectedCategory = categories.find((c) => c._id === categoryId);
+    setSubCategories(selectedCategory?.subcategories || []);
+    setActiveFilter("Alle"); // Reset subcategory filter when switching categories
   };
 
+  // Handle filter (subcategory) change
   const handleFilterChange = (filter) => {
     setActiveFilter(filter);
   };
 
+  // Handle search term change
   const handleSearch = (term) => {
     setSearchTerm(term);
   };
@@ -102,21 +110,34 @@ export default function MenuPage() {
               />
             </div>
             <div className="flex space-x-2 md:space-x-4 overflow-x-auto pb-2 scrollbar-hide">
-              {filters.map((filter) => (
-                <motion.button
-                  key={filter}
-                  className={`px-3 md:px-4 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap ${
-                    activeFilter === filter
-                      ? "bg-red-500 text-white"
-                      : "bg-white text-gray-700 border border-gray-300"
-                  }`}
-                  onClick={() => handleFilterChange(filter)}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {filter}
-                </motion.button>
-              ))}
+              <motion.button
+                className={`px-3 md:px-4 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap ${
+                  activeFilter === "Alle"
+                    ? "bg-red-500 text-white"
+                    : "bg-white text-gray-700 border border-gray-300"
+                }`}
+                onClick={() => handleFilterChange("Alle")}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                Alle
+              </motion.button>
+              {subCategories.length > 0 &&
+                subCategories.map((filter) => (
+                  <motion.button
+                    key={filter._id}
+                    className={`px-3 md:px-4 py-1 md:py-2 rounded-full text-xs md:text-sm font-medium whitespace-nowrap ${
+                      activeFilter === filter._id
+                        ? "bg-red-500 text-white"
+                        : "bg-white text-gray-700 border border-gray-300"
+                    }`}
+                    onClick={() => handleFilterChange(filter._id)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    {filter.name}
+                  </motion.button>
+                ))}
             </div>
           </div>
         </div>

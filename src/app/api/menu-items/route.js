@@ -2,12 +2,30 @@ import MenyItem from "@/components/meny/MenyItem";
 import { MenuItem } from "../../models/MenuItem";
 import mongoose from "mongoose";
 export async function POST(req) {
-  mongoose.connect(process.env.MONGO_URL);
+  await mongoose.connect(process.env.MONGO_URL);
   const data = await req.json();
-  console.log(data);
-  console.log(data.objectId);
-  const menuItemDoc = await MenuItem.create(data);
-  return Response.json(menuItemDoc);
+
+  // Convert category and subcategory to ObjectId using the new constructor
+  if (data.category) {
+    data.category = new mongoose.Types.ObjectId(data.category); // Use the new constructor
+  }
+  if (data.subcategory) {
+    data.subcategory = new mongoose.Types.ObjectId(data.subcategory); // Use the new constructor
+  }
+
+  try {
+    const menuItemDoc = await MenuItem.create(data);
+    return new Response(JSON.stringify(menuItemDoc), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    console.error("Error creating menu item:", error);
+    return new Response(JSON.stringify({ error: "Error creating menu item" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
 
 export async function PUT(req) {

@@ -7,34 +7,50 @@ import toast from "react-hot-toast";
 import DeleteButton from "@/components/DeleteButton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { PlusCircle, Edit2, X } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { PlusCircle, Edit2, X, Folder, FolderPlus } from "lucide-react";
 
 export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState("");
+  const [parentCategory, setParentCategory] = useState(null);
   const [categories, setCategories] = useState([]);
   const { loading: profileLoading, data: profileData } = UseProfile();
   const [editedCategory, setEditedCategory] = useState(null);
+  const [isSubcategory, setIsSubcategory] = useState(false);
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  function fetchCategories() {
-    fetch("/api/categories").then((res) => {
-      res.json().then((categories) => {
-        setCategories(categories);
-      });
-    });
+  async function fetchCategories() {
+    try {
+      const res = await fetch("/api/categories");
+      if (!res.ok) {
+        throw new Error("Failed to fetch categories");
+      }
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setCategories(data);
+      } else {
+        console.error("Categories data is not an array:", data);
+        setCategories([]);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      setCategories([]);
+    }
   }
 
   async function handleCategorySubmit(ev) {
     ev.preventDefault();
-    const creationPromise = new Promise(async (resolve, reject) => {
-      const data = { name: categoryName };
-      if (editedCategory) {
-        data._id = editedCategory._id;
-      }
+    const data = {
+      name: categoryName,
+      parent: parentCategory,
+    };
+    if (editedCategory) {
+      data._id = editedCategory._id;
+    }
+    try {
       const response = await fetch("/api/categories", {
         method: editedCategory ? "PUT" : "POST",
         headers: {
@@ -42,36 +58,46 @@ export default function CategoriesPage() {
         },
         body: JSON.stringify(data),
       });
-      setCategoryName("");
-      fetchCategories();
-      setEditedCategory(null);
-      if (response.ok) resolve();
-      else reject();
-    });
-    await toast.promise(creationPromise, {
-      loading: editedCategory ? "Updating category..." : "Creating category...",
-      success: editedCategory ? "Category updated!" : "Category created!",
-      error: "Error!",
-    });
+      if (response.ok) {
+        setCategoryName("");
+        setParentCategory(null);
+        setIsSubcategory(false);
+        fetchCategories();
+        setEditedCategory(null);
+        toast.success(
+          editedCategory
+            ? isSubcategory
+              ? "Subcategory updated!"
+              : "Category updated!"
+            : isSubcategory
+            ? "Subcategory created!"
+            : "Category created!"
+        );
+      } else {
+        toast.error("Error!");
+      }
+    } catch (error) {
+      console.error("Error submitting category:", error);
+      toast.error("Error!");
+    }
   }
 
   async function handleDeleteClick(_id) {
-    const promise = new Promise(async (resolve, reject) => {
-      const response = await fetch("/api/categories?_id=" + _id, {
+    try {
+      const response = await fetch(`/api/categories?_id=${_id}`, {
         method: "DELETE",
       });
+      const result = await response.json();
       if (response.ok) {
-        resolve();
+        fetchCategories();
+        toast.success("Category deleted!");
       } else {
-        reject();
+        toast.error(result.error || "Error deleting category!");
       }
-    });
-    await toast.promise(promise, {
-      loading: "Deleting category...",
-      success: "Category deleted!",
-      error: "Error!",
-    });
-    fetchCategories();
+    } catch (error) {
+      console.error("Error deleting category:", error);
+      toast.error("Error deleting category!");
+    }
   }
 
   if (profileLoading) {
@@ -91,29 +117,40 @@ export default function CategoriesPage() {
   }
 
   return (
-    <section className="max-w-2xl mx-auto p-4">
+    <section className="max-w-4xl mx-auto p-4">
       <UserTabs isAdmin={true} />
-      <h1 className="text-primary text-3xl font-bold mt-8 mb-4">Categories</h1>
-      <Card>
-        <CardContent>
-          <form className="mt-4" onSubmit={handleCategorySubmit}>
-            <div className="flex flex-col gap-4">
-              <label className="font-medium text-gray-700">
-                {editedCategory ? "Update category" : "Create new category"}
-                {editedCategory && (
-                  <>
-                    : <span className="font-bold">{editedCategory.name}</span>
-                  </>
-                )}
-              </label>
-              <div className="flex gap-2">
+      <div className="mt-8 space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">
+              {editedCategory
+                ? isSubcategory
+                  ? "Update Subcategory"
+                  : "Update Category"
+                : isSubcategory
+                ? "Create New Subcategory"
+                : "Create New Category"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleCategorySubmit} className="space-y-4">
+              <div className="flex flex-col gap-2">
+                <label className="font-medium text-gray-700">
+                  {editedCategory && (
+                    <span className="font-bold">{editedCategory.name}</span>
+                  )}
+                </label>
                 <Input
                   type="text"
                   value={categoryName}
                   onChange={(ev) => setCategoryName(ev.target.value)}
-                  placeholder="Category name"
-                  className="flex-grow"
+                  placeholder={
+                    isSubcategory ? "Subcategory name" : "Category name"
+                  }
+                  className="w-full"
                 />
+              </div>
+              <div className="flex gap-2">
                 <Button type="submit" className="flex-shrink-0">
                   {editedCategory ? (
                     <Edit2 className="w-4 h-4 mr-2" />
@@ -129,6 +166,8 @@ export default function CategoriesPage() {
                     onClick={() => {
                       setEditedCategory(null);
                       setCategoryName("");
+                      setParentCategory(null);
+                      setIsSubcategory(false);
                     }}
                   >
                     <X className="w-4 h-4 mr-2" />
@@ -136,39 +175,120 @@ export default function CategoriesPage() {
                   </Button>
                 )}
               </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold">
+              Existing Categories
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {Array.isArray(categories) && categories.length > 0 ? (
+                categories.map((category) => (
+                  <Card key={category._id} className="bg-gray-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Folder className="w-5 h-5 text-primary" />
+                          <span className="text-lg font-medium">
+                            {category.name}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setEditedCategory(category);
+                              setCategoryName(category.name);
+                              setParentCategory(null);
+                              setIsSubcategory(false);
+                            }}
+                          >
+                            <Edit2 className="w-4 h-4 mr-2" />
+                            Edit
+                          </Button>
+                          <DeleteButton
+                            label="Delete"
+                            onDelete={() => handleDeleteClick(category._id)}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Subcategories */}
+                      {category.subcategories &&
+                        category.subcategories.length > 0 && (
+                          <div className="mt-4 pl-6 border-l-2 border-gray-200">
+                            <h3 className="font-medium text-gray-700 mb-2">
+                              Subcategories:
+                            </h3>
+                            <div className="space-y-2">
+                              {category.subcategories.map((subcat) => (
+                                <div
+                                  key={subcat._id}
+                                  className="flex items-center justify-between bg-white p-2 rounded-md shadow-sm"
+                                >
+                                  <div className="flex items-center space-x-2">
+                                    <FolderPlus className="w-4 h-4 text-gray-500" />
+                                    <span>{subcat.name}</span>
+                                  </div>
+                                  <div className="flex gap-2">
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={() => {
+                                        setEditedCategory(subcat);
+                                        setCategoryName(subcat.name);
+                                        setParentCategory(category._id);
+                                        setIsSubcategory(true);
+                                      }}
+                                    >
+                                      <Edit2 className="w-3 h-3 mr-1" />
+                                      Edit
+                                    </Button>
+                                    <DeleteButton
+                                      label="Delete"
+                                      onDelete={() =>
+                                        handleDeleteClick(subcat._id)
+                                      }
+                                    />
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Button to add a new subcategory */}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="mt-4"
+                        onClick={() => {
+                          setEditedCategory(null);
+                          setCategoryName("");
+                          setParentCategory(category._id);
+                          setIsSubcategory(true);
+                        }}
+                      >
+                        <PlusCircle className="w-4 h-4 mr-2" />
+                        Add Subcategory
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <p className="text-center text-gray-500">
+                  No categories found.
+                </p>
+              )}
             </div>
-          </form>
-        </CardContent>
-      </Card>
-      <h2 className="text-xl font-semibold mt-8 mb-4 text-gray-700">
-        Existing categories
-      </h2>
-      <div className="grid gap-4">
-        {categories?.length > 0 &&
-          categories.map((c) => (
-            <Card key={c._id} className="bg-white">
-              <CardContent className="p-4 flex items-center justify-between">
-                <span className="text-lg font-medium">{c.name}</span>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setEditedCategory(c);
-                      setCategoryName(c.name);
-                    }}
-                  >
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                  <DeleteButton
-                    label="Delete"
-                    onDelete={() => handleDeleteClick(c._id)}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          </CardContent>
+        </Card>
       </div>
     </section>
   );

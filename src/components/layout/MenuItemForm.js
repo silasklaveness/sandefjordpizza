@@ -23,18 +23,37 @@ export default function MenuItemForm({ onSubmit, menuItem }) {
   const [basePrice, setBasePrice] = useState(menuItem?.basePrice || "");
   const [sizes, setSizes] = useState(menuItem?.sizes || []);
   const [category, setCategory] = useState(menuItem?.category || "");
+  const [subCategory, setSubCategory] = useState(menuItem?.subcategory || "");
   const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
   const [extraIngredientsPrices, setExtraIngredientPrices] = useState(
     menuItem?.extraIngredientsPrices || []
   );
 
+  // Fetch categories from the backend
   useEffect(() => {
-    fetch("/api/categories").then((res) => {
-      res.json().then((categories) => {
-        setCategories(categories);
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => {
+        setCategories(data);
       });
-    });
   }, []);
+
+  // Fetch subcategories when a category is selected
+  useEffect(() => {
+    if (category) {
+      const selectedCategory = categories.find((c) => c._id === category);
+      if (selectedCategory && selectedCategory.subcategories) {
+        setSubCategories(selectedCategory.subcategories);
+      } else {
+        setSubCategories([]);
+      }
+    } else {
+      setSubCategories([]);
+    }
+    // Ensure subCategory is set to the current subcategory if editing an existing item
+    setSubCategory(menuItem?.subcategory || "");
+  }, [category, categories, menuItem]);
 
   return (
     <Card className="w-full max-w-2xl mx-auto mt-8">
@@ -53,7 +72,8 @@ export default function MenuItemForm({ onSubmit, menuItem }) {
               basePrice,
               sizes,
               extraIngredientsPrices,
-              category,
+              category, // Pass the main category
+              subcategory: subCategory, // Pass the subcategory
             })
           }
           className="space-y-8"
@@ -97,6 +117,28 @@ export default function MenuItemForm({ onSubmit, menuItem }) {
                   </SelectContent>
                 </Select>
               </div>
+
+              {subCategories.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="subCategory">Subcategory</Label>
+                  <Select
+                    value={subCategory}
+                    onValueChange={(value) => setSubCategory(value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a subcategory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subCategories.map((subC) => (
+                        <SelectItem key={subC._id} value={subC._id}>
+                          {subC.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="basePrice">Base price</Label>
                 <Input

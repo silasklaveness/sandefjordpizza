@@ -40,7 +40,7 @@ export default function MenuItemsPage() {
   }
 
   return (
-    <section className="max-w-6xl mx-auto p-4">
+    <section className="max-w-2xl mx-auto p-4">
       <UserTabs isAdmin={data.admin} />
       <div className="mt-8">
         <h1 className="text-primary text-3xl font-bold mb-4">Menu Items</h1>

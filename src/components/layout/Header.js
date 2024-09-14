@@ -101,6 +101,7 @@ export default function LuxuriousHeader() {
     "/menu-items",
     "/users",
     "/orders",
+    "/oversikt",
   ];
   const shouldHideHeader = hiddenPages.some((page) =>
     pathname.startsWith(page)

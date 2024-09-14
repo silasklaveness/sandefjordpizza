@@ -24,6 +24,7 @@ export default function EditMenuItemPage() {
       res.json().then((items) => {
         const item = items.find((i) => i._id === id);
         setMenuItem(item);
+        console.log(item);
       });
     });
   }, [id]);

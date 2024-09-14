@@ -10,7 +10,16 @@ const MenuItemSchema = new Schema(
     image: { type: String },
     name: { type: String },
     description: { type: String },
-    category: { type: mongoose.Types.ObjectId },
+    category: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category", // Add reference to Category model
+      required: true, // Make it required if every item should have a category
+    },
+    subcategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category", // Reference the same Category model
+      default: null,
+    },
     basePrice: { type: Number },
     sizes: { type: [ExtraPriceSchema] },
     extraIngredientsPrices: { type: [ExtraPriceSchema] },

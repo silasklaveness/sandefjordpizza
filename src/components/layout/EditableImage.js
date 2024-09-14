@@ -1,6 +1,12 @@
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { Upload, Edit2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 export default function EditableImage({ link, setLink }) {
+  const [isHovered, setIsHovered] = useState(false);
+
   async function handleFileChange(ev) {
     const files = ev.target.files;
     if (files?.length === 1) {
@@ -10,9 +16,9 @@ export default function EditableImage({ link, setLink }) {
       const uploadPromise = fetch("/api/upload", {
         method: "POST",
         body: data,
-      }).then((respone) => {
-        if (respone.ok) {
-          return respone.json().then((link) => {
+      }).then((response) => {
+        if (response.ok) {
+          return response.json().then((link) => {
             setLink(link);
           });
         }
@@ -22,32 +28,61 @@ export default function EditableImage({ link, setLink }) {
       await toast.promise(uploadPromise, {
         loading: "Uploading...",
         success: "Image uploaded!",
-        error: "Uplaod error!",
+        error: "Upload error!",
       });
     }
   }
+
   return (
-    <>
-      {link && (
-        <Image
-          className="rounded-lg w-full h-full"
-          src={link}
-          alt="avatar"
-          width={250}
-          height={250}
+    <div className="space-y-2">
+      <div
+        className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        {link ? (
+          <>
+            <Image
+              className="object-cover w-full h-full"
+              src={link}
+              alt="avatar"
+              layout="fill"
+            />
+            {isHovered && (
+              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                <label className="cursor-pointer">
+                  <input
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept="image/*"
+                  />
+                  <Button variant="secondary" size="sm">
+                    <Edit2 className="w-4 h-4 mr-2" />
+                    Change Image
+                  </Button>
+                </label>
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
+            <Upload className="w-8 h-8 mb-2" />
+            <span>No image</span>
+          </div>
+        )}
+      </div>
+      <label className="block">
+        <input
+          type="file"
+          className="hidden"
+          onChange={handleFileChange}
+          accept="image/*"
         />
-      )}
-      {!link && (
-        <div className="bg-gray-200 text-center p-4 text-gray-500 rounded-lg">
-          No image
-        </div>
-      )}
-      <label>
-        <input type="file" className="hidden" onChange={handleFileChange} />
-        <span className="block border border-gray-300 rounded-lg p-2 cursor-pointer">
-          Edit
+        <span className="block w-full text-center border border-gray-300 rounded-lg p-2 cursor-pointer hover:bg-gray-50 transition duration-200">
+          {link ? "Edit Image" : "Upload Image"}
         </span>
       </label>
-    </>
+    </div>
   );
 }

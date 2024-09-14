@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { User, Search, X, Menu } from "lucide-react";
+import { User, Search, X, Menu, ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import Image from "next/image";
@@ -46,6 +46,7 @@ export default function UserTabs({ isAdmin }) {
     { name: "Menu Items", href: "/menu-items", icon: User, adminOnly: true },
     { name: "Users", href: "/users", icon: User, adminOnly: true },
     { name: "Orders", href: "/orders", icon: User, adminOnly: false },
+    { name: "Oversikt", href: "/oversikt", icon: User, adminOnly: true },
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -53,25 +54,32 @@ export default function UserTabs({ isAdmin }) {
   const TabContent = () => (
     <>
       <div className="p-4 border-b">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden">
-            {user?.image ? (
-              <Image
-                className="object-cover w-full h-full"
-                src={user.image}
-                alt="avatar"
-                width={250}
-                height={250}
-              />
-            ) : (
-              <User className="text-primary-foreground" />
-            )}
-          </div>
-          <div>
-            <p className="font-medium">{user?.name || "User"}</p>
-            <p className="text-sm text-muted-foreground">
-              {user?.email || "user@example.com"}
-            </p>
+        <div className="flex items-center justify-between mb-4">
+          <Link href="/">
+            <Button variant="ghost" size="icon" className="mr-2">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          </Link>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+              {user?.image ? (
+                <Image
+                  className="object-cover w-full h-full"
+                  src={user.image}
+                  alt="avatar"
+                  width={250}
+                  height={250}
+                />
+              ) : (
+                <User className="text-primary-foreground" />
+              )}
+            </div>
+            <div>
+              <p className="font-medium">{user?.name || "User"}</p>
+              <p className="text-sm text-muted-foreground">
+                {user?.email || "user@example.com"}
+              </p>
+            </div>
           </div>
         </div>
         <div className="relative">
@@ -86,9 +94,7 @@ export default function UserTabs({ isAdmin }) {
         {tabs.map((tab) => {
           if (tab.adminOnly && !isAdmin) return null;
 
-          const isActive =
-            tab.href === path ||
-            (tab.href !== "/dashboard" && path.includes(tab.href));
+          const isActive = tab.href === path || path.includes(tab.href);
 
           return (
             <Link
