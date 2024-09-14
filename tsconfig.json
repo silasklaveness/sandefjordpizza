@@ -30,6 +30,6 @@
     "src/libs/mongoConnect.js",
     "src/libs/mongoConnect.js",
     "src/app/api/auth/[...nextauth]/route.js"
-, "src/app/profile/page.js", "src/components/layout/Header.js"  ],
+, "src/app/profile/page.js", "src/components/layout/Header.js", "src/components/layout/AddressInputs.js"  ],
   "exclude": ["node_modules"]
 }

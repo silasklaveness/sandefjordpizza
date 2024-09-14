@@ -13,11 +13,38 @@ import {
   User,
   Menu,
   X,
-  ChevronDown,
   MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+
+function useScrollDirection() {
+  const [scrollDirection, setScrollDirection] = useState("up");
+
+  useEffect(() => {
+    let lastScrollY = window.pageYOffset;
+
+    const updateScrollDirection = () => {
+      const scrollY = window.pageYOffset;
+      const direction = scrollY > lastScrollY ? "down" : "up";
+      if (
+        direction !== scrollDirection &&
+        (scrollY - lastScrollY > 10 || scrollY - lastScrollY < -10)
+      ) {
+        setScrollDirection(direction);
+      }
+      lastScrollY = scrollY > 0 ? scrollY : 0;
+    };
+
+    window.addEventListener("scroll", updateScrollDirection);
+    return () => {
+      window.removeEventListener("scroll", updateScrollDirection);
+    };
+  }, [scrollDirection]);
+
+  return scrollDirection;
+}
 
 export default function LuxuriousHeader() {
   const { data: session, status } = useSession();
@@ -27,6 +54,8 @@ export default function LuxuriousHeader() {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState("Tolvsrød");
+  const pathname = usePathname();
+  const scrollDirection = useScrollDirection();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,232 +86,215 @@ export default function LuxuriousHeader() {
   };
 
   const menuVariants = {
-    closed: { opacity: 0, y: "-100%" },
-    open: { opacity: 1, y: 0 },
+    closed: { opacity: 0, x: "-100%" },
+    open: { opacity: 1, x: 0 },
   };
 
-  const linkVariants = {
-    closed: { opacity: 0, y: -20 },
-    open: { opacity: 1, y: 0 },
-  };
+  const isHomePage = pathname === "/";
+  const isTransparent = isHomePage && !isScrolled;
+  const isMenuPage = pathname === "/menu";
+
+  // Check if the current path is one of the pages where the header should be hidden
+  const hiddenPages = [
+    "/profile",
+    "/categories",
+    "/menu-items",
+    "/users",
+    "/orders",
+  ];
+  const shouldHideHeader = hiddenPages.some((page) =>
+    pathname.startsWith(page)
+  );
+
+  if (shouldHideHeader) {
+    return null;
+  }
 
   return (
     <motion.header
-      className="sticky top-0 z-50"
-      initial={{ opacity: 0, y: -100 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        isTransparent && !isOpen ? "bg-transparent" : "bg-white shadow-md"
+      } ${
+        isMenuPage && scrollDirection === "down"
+          ? "-translate-y-full"
+          : "translate-y-0"
+      }`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
-      <div
-        className={`absolute inset-0 transition-all duration-500 ${
-          isScrolled
-            ? "bg-gradient-to-b from-black/90 to-black/70 backdrop-blur-md"
-            : "bg-gradient-to-b from-black/50 to-transparent"
-        }`}
-      ></div>
-      <nav className="container mx-auto px-4 md:px-6 py-4 flex items-center justify-between relative">
-        <Link
-          href="/"
-          className="flex items-center space-x-2 text-3xl font-extrabold text-white z-10 relative"
-        >
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <Image
-              src="/logo.png"
-              alt="Logo"
-              width={100}
-              height={50}
-              className="filter drop-shadow-lg"
-            />
-          </motion.div>
+      <nav className="container mx-auto px-4 py-4 flex items-center justify-between relative">
+        <Link href="/" className="z-10 relative">
+          <Image src="/logo.png" alt="Tønsberg Pizza" width={100} height={50} />
         </Link>
         <div className="hidden md:flex items-center gap-6">
           {navItems.map((item) => (
-            <motion.div
+            <Link
               key={item.href}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              href={item.href}
+              className={`transition-colors font-medium text-sm uppercase ${
+                isTransparent && !isOpen
+                  ? "text-white hover:text-gray-300"
+                  : "text-black hover:text-gray-600"
+              }`}
             >
-              <Link
-                href={item.href}
-                className="text-white hover:text-orange-400 transition-colors font-medium text-lg relative group"
-              >
-                {item.label}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-orange-400 transition-all group-hover:w-full"></span>
-              </Link>
-            </motion.div>
+              {item.label}
+            </Link>
           ))}
         </div>
-        <motion.div
-          className="relative"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <select
-            className="appearance-none bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold pr-12 pl-10 py-2 rounded-full cursor-pointer shadow-lg hover:shadow-orange-500/50 transition-all duration-300 outline-none"
-            value={selectedLocation}
-            onChange={(e) => setSelectedLocation(e.target.value)}
-            aria-label="Select location"
-          >
-            <option className="text-black bg-white" value="Tolvsrød">
-              Tolvsrød
-            </option>
-            <option className="text-black bg-white" value="Sentrum">
-              Sentrum
-            </option>
-            <option className="text-black bg-white" value="Teie">
-              Teie
-            </option>
-          </select>
-          <MapPin
-            className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white pointer-events-none"
-            size={18}
-          />
-          <motion.div
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white pointer-events-none"
-            animate={{ rotate: 0 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ChevronDown size={18} />
-          </motion.div>
-        </motion.div>
         <div className="flex items-center gap-4">
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-            <Link href="/cart" className="relative group">
-              <ShoppingCart className="h-6 w-6 text-white transition-transform duration-300 group-hover:text-orange-400" />
-              {cartProducts.length > 0 && (
-                <motion.span
-                  className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-orange-500 text-white rounded-full text-xs font-bold"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 500, damping: 15 }}
-                >
-                  {cartProducts.length}
-                </motion.span>
-              )}
-            </Link>
-          </motion.div>
-          <div className="hidden md:flex items-center gap-4">
-            {status === "authenticated" ? (
-              <>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link href={"/profile"}>
-                    <span className="text-2xl font-medium text-white hover:text-orange-400 transition-colors">
-                      {userName}
-                    </span>
-                  </Link>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    onClick={() => signOut()}
-                    className="bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300 rounded-full px-6 py-2 text-sm font-semibold shadow-lg hover:shadow-orange-500/50"
-                  >
-                    Logg ut
-                  </Button>
-                </motion.div>
-              </>
-            ) : (
-              <>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Link
-                    href="/login"
-                    className="text-white hover:text-orange-400 transition-colors font-medium"
-                  >
-                    Logg inn
-                  </Link>
-                </motion.div>
-                <motion.div
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Button
-                    asChild
-                    className="bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300 rounded-full px-6 py-2 text-sm font-semibold shadow-lg hover:shadow-orange-500/50"
-                  >
-                    <Link href="/register">Registrer</Link>
-                  </Button>
-                </motion.div>
-              </>
-            )}
-          </div>
-          <motion.button
-            className={`p-2 rounded-full bg-gray-800/50 text-white hover:bg-gray-700/50 transition-colors md:hidden z-50`}
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-            whileHover={{ scale: 1.1 }}
+          <motion.div
+            className="relative hidden md:block"
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
+            <select
+              className={`appearance-none font-bold pr-8 pl-2 py-2 rounded cursor-pointer transition-all duration-300 outline-none border ${
+                isTransparent && !isOpen
+                  ? "bg-transparent text-white border-white"
+                  : "bg-white text-black border-gray-300"
+              }`}
+              value={selectedLocation}
+              onChange={(e) => setSelectedLocation(e.target.value)}
+              aria-label="Select location"
+            >
+              <option value="Tolvsrød">Tolvsrød</option>
+              <option value="Sentrum">Sentrum</option>
+              <option value="Teie">Teie</option>
+            </select>
+            <MapPin
+              className={`absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none ${
+                isTransparent && !isOpen ? "text-white" : "text-black"
+              }`}
+              size={18}
+            />
+          </motion.div>
+          <Link
+            href="/cart"
+            className={`transition-colors relative ${
+              isTransparent && !isOpen
+                ? "text-white hover:text-gray-300"
+                : "text-black hover:text-gray-600"
+            }`}
+          >
+            <ShoppingCart className="h-6 w-6" />
+            {cartProducts.length > 0 && (
+              <motion.span
+                className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-orange-500 text-white rounded-full text-xs font-bold"
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 500, damping: 15 }}
+              >
+                {cartProducts.length}
+              </motion.span>
+            )}
+          </Link>
+          <div className="hidden md:block">
+            {status === "authenticated" ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/profile"
+                  className={`transition-colors ${
+                    isTransparent && !isOpen
+                      ? "text-white hover:text-gray-300"
+                      : "text-black hover:text-gray-600"
+                  }`}
+                >
+                  <User size={24} />
+                </Link>
+                <Button
+                  onClick={() => signOut()}
+                  className="bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300 rounded-full px-4 py-2 text-sm font-semibold"
+                >
+                  Logg ut
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className={`transition-colors font-medium ${
+                    isTransparent && !isOpen
+                      ? "text-white hover:text-gray-300"
+                      : "text-black hover:text-gray-600"
+                  }`}
+                >
+                  Logg inn
+                </Link>
+                <Button
+                  asChild
+                  className="bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300 rounded-full px-4 py-2 text-sm font-semibold"
+                >
+                  <Link href="/register">Registrer</Link>
+                </Button>
+              </div>
+            )}
+          </div>
+          <button
+            className={`md:hidden transition-colors ${
+              isTransparent && !isOpen
+                ? "text-white hover:text-gray-300"
+                : "text-black hover:text-gray-600"
+            }`}
+            onClick={toggleMenu}
+            aria-label="Toggle menu"
+          >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
-          </motion.button>
+          </button>
         </div>
       </nav>
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="fixed inset-0 z-40 flex flex-col items-start justify-between px-4 py-5 bg-black/95 backdrop-blur-lg"
+            className="fixed w-screen flex flex-col items-start justify-between px-6 py-8 bg-orange-500 text-white"
             initial="closed"
             animate="open"
             exit="closed"
             variants={menuVariants}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           >
-            <div className="flex items-center justify-between w-full">
-              <Link
-                href="/"
-                className="flex items-center space-x-2 text-3xl font-extrabold text-white"
-                onClick={closeMenu}
-              >
-                <Image
-                  src="/logo.png"
-                  alt="Logo"
-                  width={100}
-                  height={100}
-                  className="filter drop-shadow-lg"
-                />
-              </Link>
-            </div>
-            <div className="flex flex-col space-y-6 mt-12 w-full">
-              {navItems.map((item, index) => (
-                <motion.div
+            <div className="flex flex-col space-y-8 mt-3 w-full">
+              {navItems.map((item) => (
+                <Link
                   key={item.href}
-                  variants={linkVariants}
-                  transition={{ delay: index * 0.1 }}
+                  href={item.href}
+                  onClick={closeMenu}
+                  className="text-2xl font-semibold text-white hover:text-gray-300 transition-colors"
                 >
-                  <Link
-                    href={item.href}
-                    onClick={closeMenu}
-                    className="text-4xl font-bold text-white hover:text-orange-400 transition-colors block"
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
+                  {item.label}
+                </Link>
               ))}
+
+              <div className="mt-6 w-full">
+                <select
+                  className="w-full bg-white text-orange-500 font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 outline-none border border-orange-400"
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  aria-label="Select location"
+                >
+                  <option value="Tolvsrød">Tolvsrød</option>
+                  <option value="Sentrum">Sentrum</option>
+                  <option value="Teie">Teie</option>
+                </select>
+              </div>
             </div>
-            <div className="flex flex-col w-full mt-8 space-y-4">
+
+            <div className="flex flex-col w-full mt-8 space-y-6">
               {status === "authenticated" ? (
                 <>
-                  <Link href={"/profile"}>
-                    <span className="text-2xl font-medium text-white hover:text-orange-400 transition-colors">
-                      {userName}
-                    </span>
+                  <Link
+                    href="/profile"
+                    onClick={closeMenu}
+                    className="text-2xl font-semibold text-white hover:text-gray-300 transition-colors"
+                  >
+                    {userName}
                   </Link>
                   <Button
                     onClick={() => {
                       signOut();
                       closeMenu();
                     }}
-                    className="bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300 rounded-full px-6 py-3 w-full text-lg font-semibold shadow-lg hover:shadow-orange-500/50"
+                    className="bg-white text-orange-500 hover:bg-orange-100 transition-all duration-300 rounded-full px-6 py-3 w-full text-lg font-semibold"
                   >
                     Logg ut
                   </Button>
@@ -293,43 +305,43 @@ export default function LuxuriousHeader() {
                     asChild
                     variant="ghost"
                     onClick={closeMenu}
-                    className="w-full text-white hover:text-orange-400 text-lg font-semibold"
+                    className="justify-start p-0 text-white hover:text-gray-300 text-lg font-normal"
                   >
                     <Link href="/login">Logg inn</Link>
                   </Button>
                   <Button
                     asChild
-                    className="bg-orange-500 text-white hover:bg-orange-600 transition-all duration-300 rounded-full px-6 py-3 w-full text-lg font-semibold shadow-lg hover:shadow-orange-500/50"
+                    className="bg-white text-orange-500 hover:bg-orange-100 transition-all duration-300 rounded-full px-6 py-3 w-full text-lg font-semibold"
                     onClick={closeMenu}
                   >
                     <Link href="/register">Registrer</Link>
                   </Button>
                 </>
               )}
-              <div className="flex space-x-6 justify-center mt-6">
+              <div className="flex space-x-8 justify-center mt-6">
                 <motion.a
                   href="#"
-                  className="text-white hover:text-orange-400 transition-colors"
+                  className="text-white hover:text-gray-300 transition-colors"
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Facebook size={28} />
+                  <Facebook size={30} />
                 </motion.a>
                 <motion.a
                   href="#"
-                  className="text-white hover:text-orange-400 transition-colors"
+                  className="text-white hover:text-gray-300 transition-colors"
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Instagram size={28} />
+                  <Instagram size={30} />
                 </motion.a>
                 <motion.a
                   href="#"
-                  className="text-white hover:text-orange-400 transition-colors"
+                  className="text-white hover:text-gray-300 transition-colors"
                   whileHover={{ scale: 1.2 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Youtube size={28} />
+                  <Youtube size={30} />
                 </motion.a>
               </div>
             </div>

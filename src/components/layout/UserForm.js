@@ -74,7 +74,7 @@ export default function UserForm({ user, onSave }) {
                   type="email"
                   placeholder="Email"
                   disabled={true}
-                  value={user.email}
+                  value={user?.email}
                 />
               </div>
             </div>

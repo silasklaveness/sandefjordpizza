@@ -3,7 +3,6 @@
 import { useContext, useState } from "react";
 import { CartContext } from "../AppContext";
 import { toast } from "react-hot-toast";
-import MenuItemTile from "./MenyItemTile";
 import Image from "next/image";
 import {
   Dialog,
@@ -20,7 +19,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 export default function MenuItem(menuItem) {
   const { image, name, description, basePrice, sizes, extraIngredientsPrices } =
     menuItem;
-
   const [selectedSize, setSelectedSize] = useState(sizes[0] || null);
   const [selectedExtras, setSelectedExtras] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
@@ -60,6 +58,34 @@ export default function MenuItem(menuItem) {
 
   return (
     <>
+      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="relative">
+          <Image
+            src={image}
+            alt={name}
+            width={400}
+            height={300}
+            className="w-full h-48 object-cover"
+          />
+          <div className="absolute bottom-2 right-2 bg-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-lg font-bold">
+            {basePrice},-
+          </div>
+        </div>
+        <div className="p-4">
+          <h2 className="text-xl font-bold mb-2 uppercase">{name}</h2>
+          <p className="text-gray-600 mb-4 text-sm">{description}</p>
+          <div className="flex justify-between items-center">
+            <span className="text-lg font-bold">FRA {basePrice}KR</span>
+            <Button
+              onClick={handleAddToCartButtonClick}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Legg til
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <Dialog open={showPopup} onOpenChange={setShowPopup}>
         <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800">
           <DialogHeader>
@@ -98,13 +124,13 @@ export default function MenuItem(menuItem) {
                         <RadioGroupItem
                           value={size.name}
                           id={size.name}
-                          className="border-orange-500 text-orange-500"
+                          className="border-blue-500 text-blue-500"
                         />
                         <Label
                           htmlFor={size.name}
                           className="text-gray-700 dark:text-gray-300"
                         >
-                          {size.name} ${basePrice + size.price}
+                          {size.name} {basePrice + size.price}KR
                         </Label>
                       </div>
                     ))}
@@ -129,13 +155,13 @@ export default function MenuItem(menuItem) {
                         onCheckedChange={() =>
                           handleExtraThingClick(extraThing)
                         }
-                        className="border-orange-500 text-orange-500"
+                        className="border-blue-500 text-blue-500"
                       />
                       <Label
                         htmlFor={extraThing.name}
                         className="text-gray-700 dark:text-gray-300"
                       >
-                        {extraThing.name} ${extraThing.price}
+                        {extraThing.name} {extraThing.price}KR
                       </Label>
                     </div>
                   ))}
@@ -153,14 +179,13 @@ export default function MenuItem(menuItem) {
             </Button>
             <Button
               onClick={handleAddToCartButtonClick}
-              className="bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:hover:bg-orange-700"
+              className="bg-blue-600 text-white hover:bg-blue-700"
             >
               Add to cart ${selectedPrice}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
-      <MenuItemTile onAddToCart={handleAddToCartButtonClick} {...menuItem} />
     </>
   );
 }

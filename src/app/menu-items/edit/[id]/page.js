@@ -1,4 +1,5 @@
 "use client";
+
 import { UseProfile } from "@/components/UseProfile";
 import EditableImage from "@/components/layout/EditableImage";
 import UserTabs from "@/components/layout/UserTabs";
@@ -8,11 +9,13 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import MenuItemForm from "@/components/layout/MenuItemForm";
 import DeleteButton from "@/components/DeleteButton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, Edit } from "lucide-react";
 
 export default function EditMenuItemPage() {
   const { id } = useParams();
   const [menuItem, setMenuItem] = useState(null);
-
   const [redirectToItems, setRedirectToItems] = useState(false);
   const { loading, data } = UseProfile();
 
@@ -23,17 +26,16 @@ export default function EditMenuItemPage() {
         setMenuItem(item);
       });
     });
-  }, []);
+  }, [id]);
 
   async function handleFormSubmit(ev, data) {
     ev.preventDefault();
     data = {
       ...data,
-
       _id: id,
     };
     const savingPromise = new Promise(async (resolve, reject) => {
-      const respone = await fetch("/api/menu-items", {
+      const response = await fetch("/api/menu-items", {
         method: "PUT",
         body: JSON.stringify(data),
         headers: {
@@ -41,7 +43,7 @@ export default function EditMenuItemPage() {
         },
       });
 
-      if (respone.ok) resolve();
+      if (response.ok) resolve();
       else reject();
     });
 
@@ -80,38 +82,51 @@ export default function EditMenuItemPage() {
   }
 
   if (loading) {
-    return "Loading user info...";
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   if (!data.admin) {
-    return "Not an admin...";
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!data.admin) {
-    return <div>Unauthorized</div>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-2xl font-bold text-red-500">Not an admin.</div>
+      </div>
+    );
   }
 
   return (
-    <section className="mt-8">
+    <section className="max-w-4xl mx-auto p-4">
       <UserTabs isAdmin={true} />
-      <div className="max-w-2xl mx-auto mt-8">
-        <Link href={"/menu-items"} className="button">
-          <span>Show all menu items</span>
-        </Link>
-      </div>
-      <MenuItemForm menuItem={menuItem} onSubmit={handleFormSubmit} />
-      <div className="max-w-lg mx-auto mt-4">
-        <div className="max-w-xs ml-auto pl-4">
-          <DeleteButton
-            label={"Delete this menu item"}
-            onDelete={handleDeleteClick}
-          />
-        </div>
-      </div>
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold flex items-center gap-2">
+            <Edit className="w-6 h-6" />
+            Edit Menu Item
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Link href="/menu-items">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Show all menu items
+              </Button>
+            </Link>
+          </div>
+          {menuItem && (
+            <MenuItemForm menuItem={menuItem} onSubmit={handleFormSubmit} />
+          )}
+          <div className="mt-4 flex justify-end">
+            <DeleteButton
+              label="Delete this menu item"
+              onDelete={handleDeleteClick}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

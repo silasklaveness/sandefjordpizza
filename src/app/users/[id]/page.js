@@ -14,9 +14,10 @@ export default function EditUserPage() {
     fetch("/api/profile?_id=" + id).then((res) => {
       res.json().then((user) => {
         setUser(user);
+        console.log(user);
       });
     });
-  }, []);
+  }, [id]);
 
   async function handleSaveButtonClick(ev, data) {
     ev.preventDefault();

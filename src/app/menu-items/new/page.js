@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { UseProfile } from "@/components/UseProfile";
@@ -6,6 +7,9 @@ import UserTabs from "@/components/layout/UserTabs";
 import MenuItemForm from "@/components/layout/MenuItemForm";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft, PlusCircle } from "lucide-react";
 
 export default function NewMenuItemPage() {
   console.log("NewMenuItemPage is rendering...");
@@ -49,22 +53,43 @@ export default function NewMenuItemPage() {
   }
 
   if (loading) {
-    return <p>Loading user info...</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   if (!data || !data.admin) {
-    return <p>Not an admin.</p>;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-2xl font-bold text-red-500">Not an admin.</div>
+      </div>
+    );
   }
 
   return (
-    <section className="mt-8">
+    <section className="max-w-4xl mx-auto p-4">
       <UserTabs isAdmin={true} />
-      <div className="max-w-2xl mx-auto mt-8">
-        <Link href={"/menu-items"} className="button">
-          <span>Show all menu items</span>
-        </Link>
-      </div>
-      <MenuItemForm menuItem={null} onSubmit={handleFormSubmit} />
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold flex items-center gap-2">
+            <PlusCircle className="w-6 h-6" />
+            Create New Menu Item
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4">
+            <Link href="/menu-items">
+              <Button variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Show all menu items
+              </Button>
+            </Link>
+          </div>
+          <MenuItemForm menuItem={null} onSubmit={handleFormSubmit} />
+        </CardContent>
+      </Card>
     </section>
   );
 }

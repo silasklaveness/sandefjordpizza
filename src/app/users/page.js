@@ -1,9 +1,20 @@
 "use client";
+
 import UserTabs from "@/components/layout/UserTabs";
 import { UseProfile } from "@/components/UseProfile";
 import Link from "next/link";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Edit, User } from "lucide-react";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -18,36 +29,69 @@ export default function UsersPage() {
   }, []);
 
   if (loading) {
-    return "Loading user info...";
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      </div>
+    );
   }
 
   if (!data.admin) {
-    return "Not an admin";
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-2xl font-bold text-red-500">Not an admin</div>
+      </div>
+    );
   }
 
   return (
-    <section className="max-w-2xl mx-auto mt-8">
+    <section className="max-w-4xl mx-auto p-4">
       <UserTabs isAdmin={true} />
-      <div className="mt-8">
-        {users?.length > 0 &&
-          users.map((user) => (
-            <div className="bg-gray-100 rounded-lg mb-2 p-1 flex px-4 items-center gap-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 grow">
-                <div className="text-gray-900">
-                  {!!user.name && <span>{user.name}</span>}
-                  {!user.name && <span className="italic">No name</span>}
-                </div>
-
-                <span className="text-gray-500">{user.email}</span>
-              </div>
-              <div>
-                <Link className="button" href={"/users/" + user._id}>
-                  Edit
-                </Link>
-              </div>
-            </div>
-          ))}
-      </div>
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold flex items-center gap-2">
+            <User className="w-6 h-6" />
+            Users
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {users?.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Name</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {users.map((user) => (
+                  <TableRow key={user._id}>
+                    <TableCell className="font-medium">
+                      {user.name ? (
+                        user.name
+                      ) : (
+                        <span className="italic text-gray-500">No name</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/users/${user._id}`}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="text-center py-4 text-gray-500">No users found</div>
+          )}
+        </CardContent>
+      </Card>
     </section>
   );
 }
