@@ -21,20 +21,25 @@ export async function POST(req) {
   });
 
   const stripeLineItems = [];
+
+  // Loop through the cart products and calculate prices with quantity
   for (const cartProduct of cartProducts) {
     const productInfo = await MenuItem.findById(cartProduct._id);
 
     let productPrice = productInfo.basePrice;
+
+    // Add size price if applicable
     if (cartProduct.size) {
       const size = productInfo.sizes.find(
         (size) => size._id.toString() === cartProduct.size._id.toString()
       );
       productPrice += size.price;
     }
+
+    // Add extras price if applicable
     if (cartProduct.extras?.length > 0) {
       for (const cartProductExtraThing of cartProduct.extras) {
         const productExtras = productInfo.extraIngredientsPrices;
-
         const extraThingInfo = productExtras.find(
           (extra) =>
             extra._id.toString() === cartProductExtraThing._id.toString()
@@ -42,20 +47,22 @@ export async function POST(req) {
         productPrice += extraThingInfo.price;
       }
     }
-    const productName = cartProduct.name;
 
+    // Add the item to Stripe line items, factoring in the quantity
+    const productName = cartProduct.name;
     stripeLineItems.push({
-      quantity: 1,
+      quantity: cartProduct.quantity, // Take quantity into consideration
       price_data: {
         currency: "nok",
         product_data: {
           name: productName,
         },
-        unit_amount: productPrice * 100,
+        unit_amount: productPrice * 100, // Stripe requires the amount in cents
       },
     });
   }
 
+  // Create the Stripe session
   const stripeSession = await stripe.checkout.sessions.create({
     line_items: stripeLineItems,
     mode: "payment",
@@ -75,7 +82,7 @@ export async function POST(req) {
         shipping_rate_data: {
           display_name: "Delivery fee",
           type: "fixed_amount",
-          fixed_amount: { amount: 500, currency: "NOK" },
+          fixed_amount: { amount: 5000, currency: "NOK" }, // 50 NOK delivery fee
         },
       },
     ],

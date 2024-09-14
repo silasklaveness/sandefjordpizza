@@ -21,17 +21,13 @@ export default function MenuItem(menuItem) {
     menuItem;
   const [selectedSize, setSelectedSize] = useState(sizes[0] || null);
   const [selectedExtras, setSelectedExtras] = useState([]);
-  const [showPopup, setShowPopup] = useState(false);
+  const [showPopup, setShowPopup] = useState(false); // Initially false
+  const [quantity, setQuantity] = useState(1); // Default quantity is 1
   const { addToCart } = useContext(CartContext);
 
   function handleAddToCartButtonClick() {
-    const hasOptions = sizes.length > 0 && extraIngredientsPrices?.length > 0;
-    if (hasOptions && !showPopup) {
-      setShowPopup(true);
-      return;
-    }
-    addToCart(menuItem, selectedSize, selectedExtras);
-    setShowPopup(false);
+    addToCart({ ...menuItem, quantity, selectedSize, selectedExtras });
+    setShowPopup(false); // Close popup after adding to cart
     toast.success("Added to cart!");
   }
 
@@ -75,9 +71,9 @@ export default function MenuItem(menuItem) {
           <h2 className="text-xl font-bold mb-2 uppercase">{name}</h2>
           <p className="text-gray-600 mb-4 text-sm">{description}</p>
           <div className="flex justify-between items-center">
-            <span className="text-lg font-bold">FRA {basePrice}KR</span>
+            <span className="text-lg font-bold">FRA {basePrice}kr</span>
             <Button
-              onClick={handleAddToCartButtonClick}
+              onClick={() => setShowPopup(true)}
               className="bg-blue-600 text-white hover:bg-blue-700"
             >
               Legg til
@@ -86,7 +82,7 @@ export default function MenuItem(menuItem) {
         </div>
       </div>
 
-      <Dialog open={showPopup} onOpenChange={setShowPopup}>
+      <Dialog open={showPopup} onOpenChange={(open) => setShowPopup(open)}>
         <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -167,6 +163,33 @@ export default function MenuItem(menuItem) {
                   ))}
                 </div>
               )}
+
+              {/* Quantity Selector */}
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">
+                  Quantity
+                </h3>
+                <div className="flex items-center">
+                  {/* Minus button */}
+                  <button
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="w-8 h-8 rounded-full border flex items-center justify-center"
+                  >
+                    <span className="text-xl">−</span>
+                  </button>
+
+                  {/* Quantity Display */}
+                  <span className="mx-4">{quantity}</span>
+
+                  {/* Plus button */}
+                  <button
+                    onClick={() => setQuantity((q) => q + 1)}
+                    className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center"
+                  >
+                    <span className="text-xl">+</span>
+                  </button>
+                </div>
+              </div>
             </div>
           </ScrollArea>
           <div className="flex justify-between mt-6">
@@ -181,7 +204,7 @@ export default function MenuItem(menuItem) {
               onClick={handleAddToCartButtonClick}
               className="bg-blue-600 text-white hover:bg-blue-700"
             >
-              Add to cart ${selectedPrice}
+              Add to cart {selectedPrice * quantity} KR
             </Button>
           </div>
         </DialogContent>

@@ -1,5 +1,3 @@
-// /src/app/oversikt/page.jsx
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -96,7 +94,19 @@ export default function AnalyticsPage() {
     if (order.paid) {
       return (
         sum +
-        order.cartProducts.reduce((acc, product) => acc + product.basePrice, 0)
+        order.cartProducts.reduce((acc, product) => {
+          const basePrice = product.basePrice || 0;
+          const sizePrice = product.selectedSize?.price || 0;
+          const extrasPrice =
+            product.selectedExtras?.reduce(
+              (sum, extra) => sum + (extra.price || 0),
+              0
+            ) || 0;
+          return (
+            acc +
+            (basePrice + sizePrice + extrasPrice) * (product.quantity || 1)
+          );
+        }, 0)
       );
     }
     return sum;
@@ -116,8 +126,16 @@ export default function AnalyticsPage() {
           revenue: 0,
         };
       }
-      productSales[product.name].quantity += 1;
-      productSales[product.name].revenue += product.basePrice;
+      const productTotal =
+        (product.basePrice || 0) +
+        (product.selectedSize?.price || 0) +
+        (product.selectedExtras?.reduce(
+          (sum, extra) => sum + (extra.price || 0),
+          0
+        ) || 0);
+      productSales[product.name].quantity += product.quantity || 1;
+      productSales[product.name].revenue +=
+        productTotal * (product.quantity || 1);
     });
   });
 
@@ -130,10 +148,16 @@ export default function AnalyticsPage() {
     .filter((order) => order.paid)
     .map((order) => ({
       date: dbTimeForHuman(order.createdAt).substring(0, 10), // Get date in "YYYY-MM-DD" format
-      amount: order.cartProducts.reduce(
-        (acc, product) => acc + product.basePrice,
-        0
-      ),
+      amount: order.cartProducts.reduce((acc, product) => {
+        const productTotal =
+          (product.basePrice || 0) +
+          (product.selectedSize?.price || 0) +
+          (product.selectedExtras?.reduce(
+            (sum, extra) => sum + (extra.price || 0),
+            0
+          ) || 0);
+        return acc + productTotal * (product.quantity || 1);
+      }, 0),
     }))
     .reduce((acc, curr) => {
       const existing = acc.find((item) => item.date === curr.date);
@@ -164,12 +188,13 @@ export default function AnalyticsPage() {
     color: COLORS[index % COLORS.length],
   }));
 
-  // Peak hours analysis
+  // Peak hours analysis (adjusted for Norwegian time)
   const ordersByHour = Array(24).fill(0);
 
   orders.forEach((order) => {
-    const hour = new Date(order.createdAt).getHours();
-    ordersByHour[hour] += 1;
+    const date = new Date(order.createdAt);
+    const norwegianHour = (date.getUTCHours() + 1) % 24; // Adjust for Norwegian time (UTC+1)
+    ordersByHour[norwegianHour] += 1;
   });
 
   const hourlyData = ordersByHour.map((count, hour) => ({
@@ -190,10 +215,16 @@ export default function AnalyticsPage() {
         orders: 0,
       };
     }
-    const orderTotal = order.cartProducts.reduce(
-      (acc, product) => acc + product.basePrice,
-      0
-    );
+    const orderTotal = order.cartProducts.reduce((acc, product) => {
+      const productTotal =
+        (product.basePrice || 0) +
+        (product.selectedSize?.price || 0) +
+        (product.selectedExtras?.reduce(
+          (sum, extra) => sum + (extra.price || 0),
+          0
+        ) || 0);
+      return acc + productTotal * (product.quantity || 1);
+    }, 0);
     customerSales[email].totalSpent += orderTotal;
     customerSales[email].orders += 1;
   });
@@ -388,7 +419,7 @@ export default function AnalyticsPage() {
       {/* Peak Hours Analysis */}
       <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Peak Ordering Hours</CardTitle>
+          <CardTitle>Peak Ordering Hours (Norwegian Time)</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -397,7 +428,7 @@ export default function AnalyticsPage() {
               <XAxis
                 dataKey="hour"
                 label={{
-                  value: "Hour",
+                  value: "Hour (Norwegian Time)",
                   position: "insideBottomRight",
                   offset: -5,
                 }}

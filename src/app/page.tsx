@@ -11,7 +11,7 @@ import {
 } from "framer-motion";
 import Homemeny from "../components/layout/HomeMeny";
 import SectionHeaders from "@/components/layout/SectionHeaders";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Phone, Clock, MapPin } from "lucide-react";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -21,8 +21,9 @@ export default function Home() {
     offset: ["start start", "end start"],
   });
 
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.1], [1, 0]);
-  const contentY = useTransform(scrollYProgress, [0, 0.1], ["100vh", "0vh"]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
+  const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
+  const contentY = useTransform(scrollYProgress, [0, 0.2], ["0vh", "-20vh"]);
 
   useEffect(() => {
     setIsLoaded(true);
@@ -33,18 +34,23 @@ export default function Home() {
       <div className="fixed inset-0 z-0">
         <Image
           src="/homepagebg.png"
-          alt="Restaurant background"
+          alt="Restaurantbakgrunn"
           layout="fill"
           objectFit="cover"
           quality={100}
           priority
         />
-        <div className="absolute inset-0 bg-black bg-opacity-60" />
+        <motion.div
+          className="absolute inset-0 bg-black"
+          initial={{ opacity: 0.7 }}
+          animate={{ opacity: 0.6 }}
+          transition={{ duration: 2 }}
+        />
       </div>
 
       <motion.div
         className="relative z-10 min-h-screen flex flex-col justify-center items-center px-4 text-white"
-        style={{ opacity: heroOpacity }}
+        style={{ opacity: heroOpacity, scale: heroScale, y: contentY }}
       >
         <AnimatePresence>
           {isLoaded && (
@@ -87,21 +93,36 @@ export default function Home() {
             </motion.div>
           )}
         </AnimatePresence>
-        <motion.div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
+        <motion.div
+          className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
+          animate={{ y: [0, 10, 0] }}
+          transition={{ repeat: Infinity, duration: 1.5 }}
+        >
           <ChevronDown size={32} className="text-white opacity-75" />
         </motion.div>
       </motion.div>
 
-      <motion.div className="relative z-20 bg-white">
-        <div className="px-4 md:px-8">
+      <motion.div
+        className="relative z-20 bg-gray-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 1 }}
+      >
+        <div className="px-4 md:px-8 py-16">
           <Homemeny />
         </div>
 
-        <div className="py-10 px-4 md:px-8 ">
+        <div className="py-16 px-4 md:px-8 border-t border-gray-200">
           <div className="text-center">
             <SectionHeaders subHeader={"Vår historie"} mainHeader={"Om oss"} />
           </div>
-          <div className="text-gray-700 max-w-3xl mx-auto mt-12 flex flex-col gap-8">
+          <motion.div
+            className="text-gray-700 max-w-3xl mx-auto mt-12 flex flex-col gap-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
             <p className="text-lg leading-relaxed">
               Vi ønsker alle nye og eksisterende kunder velkommen til en herlig
               smaksopplevelse. Tønsberg Pizza har helt siden 90-tallet blitt
@@ -112,22 +133,70 @@ export default function Home() {
               Vi ønsker deg velkommen inn i vår restaurant i sentrum av Tønsberg
               for en smaksopplevelse du sent vil glemme!
             </p>
+          </motion.div>
+        </div>
+
+        <div className="py-16 px-4 md:px-8 border-t border-gray-200">
+          <div className="text-center mb-12">
+            <SectionHeaders
+              subHeader={"Finn oss"}
+              mainHeader={"Åpningstider og Adresse"}
+            />
+          </div>
+          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+            <motion.div
+              className="bg-white p-6 rounded-lg shadow-md"
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-2xl font-semibold mb-4 flex items-center">
+                <Clock className="mr-2 text-orange-500" /> Åpningstider
+              </h3>
+              <ul className="space-y-2">
+                <li>Man-Tor: 14:00 - 22:00</li>
+                <li>Fre-Lør: 13:00 - 23:00</li>
+                <li>Søn: 13:00 - 22:00</li>
+              </ul>
+            </motion.div>
+            <motion.div
+              className="bg-white p-6 rounded-lg shadow-md"
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="text-2xl font-semibold mb-4 flex items-center">
+                <MapPin className="mr-2 text-orange-500" /> Adresse
+              </h3>
+              <p className="mb-4">Nedre Langgate 18, 3126 Tønsberg</p>
+              <a
+                href="https://www.google.com/maps/place/Tonsberg+Pizza/@59.2734456,10.4570829,466m/data=!3m2!1e3!4b1!4m6!3m5!1s0x4646b0dafeab45e3:0x8d2f594d70dc646!8m2!3d59.2734429!4d10.4596578!16s%2Fg%2F1td7xpbq?entry=ttu&g_ep=EgoyMDI0MDkxMS4wIKXMDSoASAFQAw%3D%3D"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block bg-orange-500 text-white px-4 py-2 rounded-full hover:bg-orange-600 transition-colors duration-300"
+              >
+                Vis på kart
+              </a>
+            </motion.div>
           </div>
         </div>
 
-        <div className="text-center py-24 px-4 md:px-8 bg-gradient-to-b from-white to-orange-50">
+        <div className="text-center py-24 px-4 md:px-8 border-t border-gray-200">
           <div className="text-center">
             <SectionHeaders
               subHeader={"Ikke nøl"}
-              mainHeader={"Bare å kontakte oss "}
+              mainHeader={"Bare kontakt oss"}
             />
           </div>
           <motion.a
-            className="text-4xl md:text-6xl font-bold mt-12 text-orange-500 hover:text-orange-600 transition-colors duration-300 inline-block"
+            className="text-4xl md:text-6xl font-bold mt-12 text-orange-500 hover:text-orange-600 transition-colors duration-300 inline-flex items-center gap-4"
             href="tel:+4745786703"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
+            <Phone className="w-12 h-12" />
             +47 45786703
           </motion.a>
         </div>

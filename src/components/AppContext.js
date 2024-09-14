@@ -7,15 +7,22 @@ import toast from "react-hot-toast";
 export const CartContext = createContext({});
 
 export function cartProductPrice(cartProduct) {
-  let price = cartProduct.basePrice;
-  if (cartProduct.size) {
-    price += cartProduct.size.price;
+  // Set the base price or default it to 0 if it's missing
+  let price = cartProduct.basePrice || 0;
+
+  // Add size price if it exists
+  if (cartProduct.selectedSize) {
+    price += cartProduct.selectedSize.price || 0;
   }
-  if (cartProduct.extras?.length > 0) {
-    cartProduct.extras.forEach((extra) => {
-      price += extra.price;
+
+  // Add extra ingredients price if there are extras
+  if (cartProduct.selectedExtras?.length > 0) {
+    cartProduct.selectedExtras.forEach((extra) => {
+      price += extra.price || 0;
     });
   }
+
+  // Return the total price
   return price;
 }
 

@@ -11,6 +11,7 @@ import "swiper/css/autoplay";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Homemeny() {
   const [bestSellers, setBestSellers] = useState([]);
@@ -29,7 +30,7 @@ export default function Homemeny() {
         <div className="text-center mb-8">
           <SectionHeaders
             subHeader={"Sjekk ut"}
-            mainHeader={"Våre beste selgere!"}
+            mainHeader={"Våre bestselgere!"}
           />
         </div>
         <Swiper
@@ -53,7 +54,7 @@ export default function Homemeny() {
               slidesPerView: 4,
             },
           }}
-          className="mb-8"
+          className="mb-12"
         >
           {bestSellers?.length > 0 &&
             bestSellers.map((item) => (
@@ -63,15 +64,23 @@ export default function Homemeny() {
             ))}
         </Swiper>
         <div className="text-center">
-          <Button
-            asChild
-            className="bg-orange-500 text-white hover:bg-orange-600 transition-colors duration-300"
-          >
-            <Link href="/menu" className="inline-flex items-center">
-              Se hele menyen
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Button
+              asChild
+              className="bg-orange-500 text-white hover:bg-orange-600 transition-colors duration-300 px-8 py-3 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl"
+            >
+              <Link href="/menu" className="inline-flex items-center">
+                Se hele menyen
+                <motion.div
+                  className="ml-2"
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </motion.div>
+              </Link>
+            </Button>
+          </motion.div>
         </div>
       </div>
     </section>
