@@ -113,7 +113,7 @@ export default function OrderPage() {
             Takk for din bestilling!
           </h2>
           <p className="text-gray-600 mt-2">
-            Vi ringer deg når din bestilling er på vei.
+            Vi ringer deg n&aring;r din bestilling er p&aring; vei.
           </p>
         </motion.div>
       </div>
