@@ -20,7 +20,7 @@ export default function CheckoutInputs({
   const markerRef = useRef(null);
 
   const [map, setMap] = useState(null);
-  const [marker, setMarker] = useState(null);
+  const [autocomplete, setAutocomplete] = useState(null);
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY || "",
     libraries: libraries,
@@ -33,15 +33,57 @@ export default function CheckoutInputs({
       autocompleteInputRef.current &&
       !disabled
     ) {
-      // Initialize map and autocomplete logic here (unchanged)
+      // Initialize the map
+      const mapInstance = new google.maps.Map(mapRef.current, {
+        center: { lat: -34.397, lng: 150.644 }, // Default location (can be adjusted)
+        zoom: 8,
+      });
+      setMap(mapInstance);
+
+      // Initialize the marker
+      const markerInstance = new google.maps.Marker({
+        map: mapInstance,
+      });
+      markerRef.current = markerInstance;
+
+      // Initialize Autocomplete and link it to the input field
+      const autocompleteInstance = new google.maps.places.Autocomplete(
+        autocompleteInputRef.current,
+        {
+          fields: ["address_components", "geometry"],
+        }
+      );
+      setAutocomplete(autocompleteInstance);
+
+      // Set the autocomplete listener
+      autocompleteInstance.addListener("place_changed", () => {
+        const place = autocompleteInstance.getPlace();
+        if (!place.geometry) {
+          console.error("Place contains no geometry");
+          return;
+        }
+
+        // Move the map to the selected place and update the marker position
+        mapInstance.setCenter(place.geometry.location);
+        markerInstance.setPosition(place.geometry.location);
+
+        // Fill the form fields based on the selected address
+        const components = place.address_components;
+        fillFormFields(components);
+      });
     }
   }, [isLoaded, disabled]);
 
   useEffect(() => {
-    if (addressProps.streetAddress && addressProps.city && map && marker) {
+    if (
+      addressProps.streetAddress &&
+      addressProps.city &&
+      map &&
+      markerRef.current
+    ) {
       geocodeAddress(`${addressProps.streetAddress}, ${addressProps.city}`);
     }
-  }, [addressProps, map, marker]);
+  }, [addressProps, map]);
 
   const getComponent = (components, types) => {
     for (const type of types) {
@@ -73,10 +115,10 @@ export default function CheckoutInputs({
   const geocodeAddress = (address) => {
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address }, (results, status) => {
-      if (status === "OK" && map && marker) {
+      if (status === "OK" && map && markerRef.current) {
         const location = results[0].geometry.location;
         map.setCenter(location);
-        marker.setPosition(location);
+        markerRef.current.setPosition(location);
       } else {
         console.error(
           "Geocode was not successful for the following reason: " + status
