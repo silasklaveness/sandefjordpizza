@@ -30,7 +30,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className="relative bg-white">
       <div className="fixed inset-0 z-0">
         <Image
           src="/homepagebg.png"
