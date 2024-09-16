@@ -65,7 +65,7 @@ export default function OrderPage() {
           Order Not Found
         </h2>
         <p className="text-gray-600">
-          We couldn't find the order you're looking for.
+          We couldnt find the order youre looking for.
         </p>
       </div>
     );
