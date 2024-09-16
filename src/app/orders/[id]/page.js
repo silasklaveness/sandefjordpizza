@@ -16,6 +16,8 @@ import {
   Phone,
   Mail,
   CreditCard,
+  Clock,
+  Store,
 } from "lucide-react";
 
 export default function OrderPage() {
@@ -28,6 +30,7 @@ export default function OrderPage() {
     if (typeof window !== "undefined") {
       if (window.location.href.includes("clear-cart=1")) {
         clearCart();
+        window.location.href = window.location.href.replace("clear-cart=1", "");
       }
     }
     if (id) {
@@ -62,11 +65,13 @@ export default function OrderPage() {
           Order Not Found
         </h2>
         <p className="text-gray-600">
-          We couldnt find the order youre looking for.
+          We couldn't find the order you're looking for.
         </p>
       </div>
     );
   }
+
+  const isDeliveryOrder = order.streetAddress && order.city && order.country;
 
   const subtotal =
     order.cartProducts && order.cartProducts.length > 0
@@ -85,7 +90,7 @@ export default function OrderPage() {
         }, 0)
       : 0;
 
-  const deliveryFee = 5;
+  const deliveryFee = isDeliveryOrder ? 5 : 0;
   const total = subtotal + deliveryFee;
 
   return (
@@ -113,7 +118,9 @@ export default function OrderPage() {
             Takk for din bestilling!
           </h2>
           <p className="text-gray-600 mt-2">
-            Vi ringer deg n&aring;r din bestilling er p&aring; vei.
+            {isDeliveryOrder
+              ? "Vi ringer deg når din bestilling er på vei."
+              : "Vi ringer deg når din bestilling er klar for henting."}
           </p>
         </motion.div>
       </div>
@@ -146,21 +153,43 @@ export default function OrderPage() {
               </li>
             </ul>
             <Separator className="my-4" />
-            <h3 className="font-semibold mb-2">Delivery Address</h3>
-            <ul className="space-y-2">
-              <li className="flex items-center">
-                <MapPin className="w-5 h-5 mr-2 text-gray-500" />
-                {order.streetAddress}
-              </li>
-              <li className="flex items-center">
-                <MapPin className="w-5 h-5 mr-2 text-gray-500 opacity-0" />
-                {order.postalCode} {order.city}
-              </li>
-              <li className="flex items-center">
-                <MapPin className="w-5 h-5 mr-2 text-gray-500 opacity-0" />
-                {order.country}
-              </li>
-            </ul>
+            {isDeliveryOrder ? (
+              <>
+                <h3 className="font-semibold mb-2">Delivery Address</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-gray-500" />
+                    {order.streetAddress}
+                  </li>
+                  <li className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-gray-500 opacity-0" />
+                    {order.postalCode} {order.city}
+                  </li>
+                  <li className="flex items-center">
+                    <MapPin className="w-5 h-5 mr-2 text-gray-500 opacity-0" />
+                    {order.country}
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <>
+                <h3 className="font-semibold mb-2">Pickup Information</h3>
+                <ul className="space-y-2">
+                  <li className="flex items-center">
+                    <Store className="w-5 h-5 mr-2 text-gray-500" />
+                    Pickup at our store
+                  </li>
+                  <li className="flex items-center">
+                    <Clock className="w-5 h-5 mr-2 text-gray-500" />
+                    Estimated pickup time:{" "}
+                    {new Date(order.createdAt).getTime() + 30 * 60000 >
+                    new Date().getTime()
+                      ? "30 minutes"
+                      : "Ready for pickup"}
+                  </li>
+                </ul>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -216,12 +245,14 @@ export default function OrderPage() {
                 <span className="text-gray-600">Subtotal:</span>
                 <span className="font-semibold">{subtotal.toFixed(2)} KR</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Delivery:</span>
-                <span className="font-semibold">
-                  {deliveryFee.toFixed(2)} KR
-                </span>
-              </div>
+              {isDeliveryOrder && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Delivery:</span>
+                  <span className="font-semibold">
+                    {deliveryFee.toFixed(2)} KR
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-lg font-bold">
                 <span>Total:</span>
                 <span>{total.toFixed(2)} KR</span>

@@ -4,6 +4,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { useContext, useState, useEffect } from "react";
 import { CartContext } from "../AppContext";
+import { RestaurantContext } from "../RestaurantContext"; // Import RestaurantContext
 import ShoppingCart from "../icons/ShoppingCart";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -51,9 +52,10 @@ export default function LuxuriousHeader() {
   const userData = session?.user;
   let userName = userData?.name || userData?.email;
   const { cartProducts } = useContext(CartContext);
+  const { selectedRestaurant, setSelectedRestaurant } =
+    useContext(RestaurantContext);
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState("Tolvsrød");
   const pathname = usePathname();
   const scrollDirection = useScrollDirection();
 
@@ -94,7 +96,6 @@ export default function LuxuriousHeader() {
   const isTransparent = isHomePage && !isScrolled;
   const isMenuPage = pathname === "/menu";
 
-  // Check if the current path is one of the pages where the header should be hidden
   const hiddenPages = [
     "/profile",
     "/categories",
@@ -152,11 +153,11 @@ export default function LuxuriousHeader() {
             <select
               className={`appearance-none font-bold pr-8 pl-2 py-2 rounded cursor-pointer transition-all duration-300 outline-none border ${
                 isTransparent && !isOpen
-                  ? "bg-transparent text-white border-white"
+                  ? "bg-white text-black border-white"
                   : "bg-white text-black border-gray-300"
               }`}
-              value={selectedLocation}
-              onChange={(e) => setSelectedLocation(e.target.value)}
+              value={selectedRestaurant}
+              onChange={(e) => setSelectedRestaurant(e.target.value)} // Update selectedRestaurant
               aria-label="Select location"
             >
               <option value="Tolvsrød">Tolvsrød</option>
@@ -165,7 +166,7 @@ export default function LuxuriousHeader() {
             </select>
             <MapPin
               className={`absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none ${
-                isTransparent && !isOpen ? "text-white" : "text-black"
+                isTransparent && !isOpen ? "text-black" : "text-black"
               }`}
               size={18}
             />
@@ -269,8 +270,8 @@ export default function LuxuriousHeader() {
               <div className="mt-6 w-full">
                 <select
                   className="w-full bg-white text-orange-500 font-bold py-2 px-4 rounded-full cursor-pointer transition-all duration-300 outline-none border border-orange-400"
-                  value={selectedLocation}
-                  onChange={(e) => setSelectedLocation(e.target.value)}
+                  value={selectedRestaurant}
+                  onChange={(e) => setSelectedRestaurant(e.target.value)} // Update selectedRestaurant in mobile
                   aria-label="Select location"
                 >
                   <option value="Tolvsrød">Tolvsrød</option>

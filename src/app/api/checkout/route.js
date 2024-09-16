@@ -9,11 +9,14 @@ const stripe = require("stripe")(process.env.STRIPE_SK);
 export async function POST(req) {
   mongoose.connect(process.env.MONGO_URL);
 
-  const { cartProducts, address } = await req.json();
+  const { name, email, cartProducts, address } = await req.json();
+  console.log("cartProducts", cartProducts, address, name, email);
   const session = await getServerSession(authOptions);
-  const userEmail = session?.user?.email;
+  const userEmail = session?.user?.email || email;
+  const userName = session?.user?.name || name;
 
   const orderDoc = await Order.create({
+    name: userName,
     userEmail,
     ...address,
     cartProducts,
@@ -67,7 +70,11 @@ export async function POST(req) {
     line_items: stripeLineItems,
     mode: "payment",
     customer_email: userEmail,
-    success_url: process.env.NEXTAUTH_URL + "orders/" + orderDoc._id.toString(),
+    success_url:
+      process.env.NEXTAUTH_URL +
+      "orders/" +
+      orderDoc._id.toString() +
+      "?clear-cart=1",
     cancel_url: process.env.NEXTAUTH_URL + "cart?canceled=1",
     metadata: { orderId: orderDoc._id.toString() },
     payment_intent_data: {

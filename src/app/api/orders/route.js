@@ -8,22 +8,6 @@ export async function GET(req) {
     // Connect to the MongoDB database
     await mongoose.connect(process.env.MONGO_URL);
 
-    // Get the session information
-    const session = await getServerSession(authOptions);
-
-    // If no session is found, return unauthorized
-    if (!session) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
-    }
-
-    // Get user email from the session
-    const userEmail = session.user?.email;
-
-    // Check if the current user is an admin
-    const admin = await isAdmin(session);
-
     // Parse query parameters from the request URL
     const url = new URL(req.url, `http://${req.headers.host}`);
     const _id = url.searchParams.get("_id");
@@ -36,7 +20,35 @@ export async function GET(req) {
     // Apply filter based on order ID if provided
     if (_id) {
       filter._id = _id;
+
+      // If only an order ID is provided, allow access to the specific order without session authentication
+      const order = await Order.findById(_id);
+
+      // Return the order if found
+      if (order) {
+        return new Response(JSON.stringify([order]), { status: 200 });
+      } else {
+        return new Response(JSON.stringify({ message: "Order not found" }), {
+          status: 404,
+        });
+      }
     }
+
+    // Get the session information
+    const session = await getServerSession(authOptions);
+
+    // If no session is found and no order ID is provided, return unauthorized
+    if (!session) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    // Get user email from the session
+    const userEmail = session.user?.email;
+
+    // Check if the current user is an admin
+    const admin = await isAdmin(session);
 
     // Apply date range filter if startDate or endDate is provided
     if (startDate || endDate) {

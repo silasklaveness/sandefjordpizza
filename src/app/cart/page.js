@@ -30,18 +30,21 @@ export default function CartPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
 
+  // Use profile data only to initialize name, email, and address, not to overwrite manual entries
   useEffect(() => {
-    if (profileData?.city) {
-      const { phone, streetAddress, city, postalCode, country } = profileData;
-      setAddress({ phone, streetAddress, city, postalCode, country });
+    if (profileData) {
+      if (profileData.name && !name) {
+        setName(profileData.name);
+      }
+      if (profileData.email && !email) {
+        setEmail(profileData.email);
+      }
+      if (profileData.streetAddress && !address.streetAddress) {
+        const { phone, streetAddress, city, postalCode, country } = profileData;
+        setAddress({ phone, streetAddress, city, postalCode, country });
+      }
     }
-    if (profileData?.name) {
-      setName(profileData.name);
-    }
-    if (profileData?.email) {
-      setEmail(profileData.email);
-    }
-  }, [profileData]);
+  }, [profileData, name, email, address]);
 
   const subtotal = cartProducts.reduce(
     (sum, p) => sum + cartProductPrice(p) * p.quantity,
@@ -74,6 +77,7 @@ export default function CartPage() {
 
   async function proceedToCheckout(ev) {
     ev.preventDefault();
+
     if (deliveryOption === "delivery" && subtotal < 200) {
       toast.error("Minimum order for delivery is 200 KR");
       return;
@@ -100,8 +104,8 @@ export default function CartPage() {
           address,
           cartProducts,
           deliveryOption,
-          name,
-          email,
+          name, // Use the name from state, not profileData
+          email, // Use the email from state, not profileData
         }),
       }).then(async (response) => {
         if (response.ok) {
@@ -112,6 +116,7 @@ export default function CartPage() {
         }
       });
     });
+
     await toast.promise(promise, {
       loading: "Preparing your order...",
       success: "Redirecting to payment...",

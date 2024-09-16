@@ -1,28 +1,24 @@
 "use client";
 import { SessionProvider } from "next-auth/react";
-import { createContext, useEffect } from "react";
-import { useState } from "react";
+import { createContext, useEffect, useState } from "react";
+import RestaurantProvider from "./RestaurantContext";
 import toast from "react-hot-toast";
 
 export const CartContext = createContext({});
 
 export function cartProductPrice(cartProduct) {
-  // Set the base price or default it to 0 if it's missing
   let price = cartProduct.basePrice || 0;
 
-  // Add size price if it exists
   if (cartProduct.selectedSize) {
     price += cartProduct.selectedSize.price || 0;
   }
 
-  // Add extra ingredients price if there are extras
   if (cartProduct.selectedExtras?.length > 0) {
     cartProduct.selectedExtras.forEach((extra) => {
       price += extra.price || 0;
     });
   }
 
-  // Return the total price
   return price;
 }
 
@@ -48,7 +44,6 @@ export default function AppProvider({ children }) {
         (v, index) => index !== indexToRemove
       );
       saveCartProductsToLocalStorage(newCartProducts);
-
       return newCartProducts;
     });
     toast.success("Produkt fjernet");
@@ -68,19 +63,22 @@ export default function AppProvider({ children }) {
       return newProducts;
     });
   }
+
   return (
     <SessionProvider>
-      <CartContext.Provider
-        value={{
-          cartProducts,
-          setCartProducts,
-          addToCart,
-          removeCartProduct,
-          clearCart,
-        }}
-      >
-        {children}
-      </CartContext.Provider>
+      <RestaurantProvider>
+        <CartContext.Provider
+          value={{
+            cartProducts,
+            setCartProducts,
+            addToCart,
+            removeCartProduct,
+            clearCart,
+          }}
+        >
+          {children}
+        </CartContext.Provider>
+      </RestaurantProvider>
     </SessionProvider>
   );
 }

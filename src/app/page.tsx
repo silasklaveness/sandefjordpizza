@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -12,6 +12,7 @@ import {
 import Homemeny from "../components/layout/HomeMeny";
 import SectionHeaders from "@/components/layout/SectionHeaders";
 import { ChevronDown, Phone, Clock, MapPin } from "lucide-react";
+import { RestaurantContext } from "@/components/RestaurantContext"; // Import the RestaurantContext
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -24,6 +25,8 @@ export default function Home() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const heroScale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
   const contentY = useTransform(scrollYProgress, [0, 0.2], ["0vh", "-20vh"]);
+
+  const { selectedRestaurant } = useContext(RestaurantContext); // Get the selected restaurant from the context
 
   useEffect(() => {
     setIsLoaded(true);
@@ -67,7 +70,7 @@ export default function Home() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
               >
-                Velkommen til Tønsberg Pizza
+                Velkommen til Tønsberg Pizza {selectedRestaurant}
               </motion.h1>
               <motion.p
                 className="text-xl md:text-2xl mb-8 text-center max-w-2xl mx-auto"
@@ -111,31 +114,6 @@ export default function Home() {
         <div className="px-4 md:px-8 py-16">
           <Homemeny />
         </div>
-
-        <div className="py-16 px-4 md:px-8 border-t border-gray-200">
-          <div className="text-center">
-            <SectionHeaders subHeader={"Vår historie"} mainHeader={"Om oss"} />
-          </div>
-          <motion.div
-            className="text-gray-700 max-w-3xl mx-auto mt-12 flex flex-col gap-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-lg leading-relaxed">
-              Vi ønsker alle nye og eksisterende kunder velkommen til en herlig
-              smaksopplevelse. Tønsberg Pizza har helt siden 90-tallet blitt
-              omtalt som «byens beste pizza». Vi benytter ferske lokale råvarer
-              og baker våre ferske pizzabunner hver dag.
-            </p>
-            <p className="text-lg leading-relaxed">
-              Vi ønsker deg velkommen inn i vår restaurant i sentrum av Tønsberg
-              for en smaksopplevelse du sent vil glemme!
-            </p>
-          </motion.div>
-        </div>
-
         <div className="py-16 px-4 md:px-8 border-t border-gray-200">
           <div className="text-center mb-12">
             <SectionHeaders
@@ -181,6 +159,30 @@ export default function Home() {
               </a>
             </motion.div>
           </div>
+        </div>
+
+        <div className="py-16 px-4 md:px-8 border-t border-gray-200">
+          <div className="text-center">
+            <SectionHeaders subHeader={"Vår historie"} mainHeader={"Om oss"} />
+          </div>
+          <motion.div
+            className="text-gray-700 max-w-3xl mx-auto mt-12 flex flex-col gap-8"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+          >
+            <p className="text-lg leading-relaxed">
+              Vi ønsker alle nye og eksisterende kunder velkommen til en herlig
+              smaksopplevelse. Tønsberg Pizza har helt siden 90-tallet blitt
+              omtalt som «byens beste pizza». Vi benytter ferske lokale råvarer
+              og baker våre ferske pizzabunner hver dag.
+            </p>
+            <p className="text-lg leading-relaxed">
+              Vi ønsker deg velkommen inn i vår restaurant i sentrum av Tønsberg
+              for en smaksopplevelse du sent vil glemme!
+            </p>
+          </motion.div>
         </div>
 
         <div className="text-center py-24 px-4 md:px-8 border-t border-gray-200">

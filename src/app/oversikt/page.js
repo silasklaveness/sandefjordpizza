@@ -8,9 +8,9 @@ import {
   TableBody,
   TableCell,
   TableHead,
+  TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { dbTimeForHuman } from "@/libs/datetime";
 import UserTabs from "@/components/layout/UserTabs";
 import {
   LineChart,
@@ -20,48 +20,38 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   Legend,
   BarChart,
   Bar,
+  Area,
+  ComposedChart,
 } from "recharts";
-import {
-  ArrowUp,
-  DollarSign,
-  ShoppingCart,
-  TrendingUp,
-  Calendar,
-} from "lucide-react";
+import { ArrowUp, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export default function AnalyticsPage() {
   const [orders, setOrders] = useState([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const { loading, data: profile } = UseProfile();
 
-  // Initialize dates
-  const today = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-  const [startDate, setStartDate] = useState(today);
-  const [endDate, setEndDate] = useState(today);
-  const [isDateRange, setIsDateRange] = useState(false); // Toggle between single date and date range
+  const [startDate, setStartDate] = useState(getLastWeekStart());
+  const [endDate, setEndDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [isDateRange, setIsDateRange] = useState(false);
+  const [dateRangeType, setDateRangeType] = useState("last-week");
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [startDate, endDate]);
 
   function fetchOrders() {
     setLoadingOrders(true);
 
     const queryParams = new URLSearchParams();
-    if (startDate) {
-      queryParams.append("startDate", new Date(startDate).toISOString());
-    }
-    if (endDate) {
-      const end = new Date(endDate);
-      end.setHours(23, 59, 59, 999); // Include the entire end date
-      queryParams.append("endDate", end.toISOString());
-    }
+    queryParams.append("startDate", new Date(startDate).toISOString());
+    queryParams.append("endDate", new Date(endDate).toISOString());
 
     fetch(`/api/orders?${queryParams.toString()}`)
       .then((res) => res.json())
@@ -69,6 +59,47 @@ export default function AnalyticsPage() {
         setOrders(orders);
         setLoadingOrders(false);
       });
+  }
+
+  function getLastWeekStart() {
+    const date = new Date();
+    date.setDate(date.getDate() - 7);
+    return date.toISOString().split("T")[0];
+  }
+
+  function getLast30DaysStart() {
+    const date = new Date();
+    date.setDate(date.getDate() - 30);
+    return date.toISOString().split("T")[0];
+  }
+
+  function handleDateRangeChange(type) {
+    const today = new Date();
+    let start;
+    let end = today.toISOString().split("T")[0];
+
+    switch (type) {
+      case "today":
+        start = end;
+        break;
+      case "last-week":
+        start = getLastWeekStart();
+        break;
+      case "last-30-days":
+        start = getLast30DaysStart();
+        break;
+      case "custom":
+        setIsDateRange(true);
+        setDateRangeType("custom");
+        return;
+      default:
+        start = getLastWeekStart();
+    }
+
+    setStartDate(start);
+    setEndDate(end);
+    setDateRangeType(type);
+    setIsDateRange(false);
   }
 
   if (loading || loadingOrders) {
@@ -89,25 +120,9 @@ export default function AnalyticsPage() {
     );
   }
 
-  // Compute analytics
   const totalEarned = orders.reduce((sum, order) => {
     if (order.paid) {
-      return (
-        sum +
-        order.cartProducts.reduce((acc, product) => {
-          const basePrice = product.basePrice || 0;
-          const sizePrice = product.selectedSize?.price || 0;
-          const extrasPrice =
-            product.selectedExtras?.reduce(
-              (sum, extra) => sum + (extra.price || 0),
-              0
-            ) || 0;
-          return (
-            acc +
-            (basePrice + sizePrice + extrasPrice) * (product.quantity || 1)
-          );
-        }, 0)
-      );
+      return sum + calculateOrderTotal(order);
     }
     return sum;
   }, 0);
@@ -115,7 +130,373 @@ export default function AnalyticsPage() {
   const totalOrders = orders.length;
   const averageOrderValue = totalEarned / totalOrders || 0;
 
-  // Best-selling products
+  const productSales = calculateProductSales(orders);
+  const bestSellingProducts = Object.values(productSales).sort(
+    (a, b) => b.quantity - a.quantity
+  );
+
+  const revenueData = prepareRevenueData(orders, startDate, endDate);
+  const hourlyData = prepareHourlyData(orders);
+  const topCustomers = calculateTopCustomers(orders);
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <div className="flex-grow flex flex-col md:flex-row">
+        <div className="md:w-64 md:flex-shrink-0">
+          <UserTabs isAdmin={profile.admin} />
+        </div>
+        <main className="flex-grow p-4 md:p-6 lg:p-8 overflow-x-hidden">
+          <div className="max-w-6xl mx-auto">
+            <DateSelection
+              startDate={startDate}
+              endDate={endDate}
+              isDateRange={isDateRange}
+              dateRangeType={dateRangeType}
+              setStartDate={setStartDate}
+              setEndDate={setEndDate}
+              setIsDateRange={setIsDateRange}
+              setDateRangeType={setDateRangeType}
+              handleDateRangeChange={handleDateRangeChange}
+              fetchOrders={fetchOrders}
+            />
+
+            <SummaryCards
+              totalEarned={totalEarned}
+              totalOrders={totalOrders}
+              averageOrderValue={averageOrderValue}
+              bestSellingProduct={bestSellingProducts[0]?.name || "N/A"}
+            />
+
+            <RevenueChart data={revenueData} dateRangeType={dateRangeType} />
+
+            <PeakHoursChart data={hourlyData} />
+            <TopCustomersTable customers={topCustomers} />
+            <BestSellingProductsTable products={bestSellingProducts} />
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+}
+
+function DateSelection({
+  startDate,
+  endDate,
+  isDateRange,
+  dateRangeType,
+  setStartDate,
+  setEndDate,
+  setIsDateRange,
+  setDateRangeType,
+  handleDateRangeChange,
+  fetchOrders,
+}) {
+  return (
+    <div className="flex flex-col space-y-4 mb-4">
+      <div className="flex flex-wrap gap-2">
+        <Button
+          onClick={() => handleDateRangeChange("today")}
+          variant={dateRangeType === "today" ? "default" : "outline"}
+        >
+          Today
+        </Button>
+        <Button
+          onClick={() => handleDateRangeChange("last-week")}
+          variant={dateRangeType === "last-week" ? "default" : "outline"}
+        >
+          Last Week
+        </Button>
+        <Button
+          onClick={() => handleDateRangeChange("last-30-days")}
+          variant={dateRangeType === "last-30-days" ? "default" : "outline"}
+        >
+          Last 30 Days
+        </Button>
+        <Button
+          onClick={() => handleDateRangeChange("custom")}
+          variant={dateRangeType === "custom" ? "default" : "outline"}
+        >
+          Custom Date
+        </Button>
+      </div>
+      {isDateRange && (
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <label
+              htmlFor="start-date"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Start Date
+            </label>
+            <Input
+              id="start-date"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="end-date"
+              className="block text-sm font-medium text-gray-700"
+            >
+              End Date
+            </label>
+            <Input
+              id="end-date"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="mt-1"
+            />
+          </div>
+          <Button
+            onClick={() => {
+              setDateRangeType("custom");
+              fetchOrders();
+            }}
+          >
+            Apply Custom Range
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SummaryCards({
+  totalEarned,
+  totalOrders,
+  averageOrderValue,
+  bestSellingProduct,
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
+      <SummaryCard
+        icon={<DollarSign className="h-8 w-8 text-green-500" />}
+        title="Total Earned"
+        value={`${totalEarned.toFixed(2)} KR`}
+      />
+      <SummaryCard
+        icon={<ShoppingCart className="h-8 w-8 text-blue-500" />}
+        title="Total Orders"
+        value={totalOrders}
+      />
+      <SummaryCard
+        icon={<TrendingUp className="h-8 w-8 text-purple-500" />}
+        title="Average Order Value"
+        value={`${averageOrderValue.toFixed(2)} KR`}
+      />
+      <SummaryCard
+        icon={<ArrowUp className="h-8 w-8 text-red-500" />}
+        title="Top Product"
+        value={bestSellingProduct}
+      />
+    </div>
+  );
+}
+
+function SummaryCard({ icon, title, value }) {
+  return (
+    <Card>
+      <CardContent className="flex items-center p-6">
+        <div className="mr-4">{icon}</div>
+        <div>
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <h3 className="text-2xl font-bold">{value}</h3>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RevenueChart({ data, dateRangeType }) {
+  const maxRevenue = Math.max(...data.map((item) => item.amount));
+  const yAxisDomain = [0, Math.ceil(maxRevenue * 1.1)];
+
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle>Detailed Revenue Analysis</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={400}>
+          <ComposedChart
+            data={data}
+            margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" stroke="#f5f5f5" />
+            <XAxis
+              dataKey="date"
+              stroke="#888888"
+              tick={{ fill: "#888888", fontSize: 12 }}
+              tickLine={{ stroke: "#888888" }}
+              tickFormatter={(value) => {
+                const date = new Date(value);
+                return dateRangeType === "today"
+                  ? `${date.getHours()}:00`
+                  : `${date.getDate()}/${date.getMonth() + 1}`;
+              }}
+            />
+            <YAxis
+              yAxisId="left"
+              stroke="#888888"
+              tick={{ fill: "#888888", fontSize: 12 }}
+              tickLine={{ stroke: "#888888" }}
+              domain={yAxisDomain}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              stroke="#82ca9d"
+              tick={{ fill: "#82ca9d", fontSize: 12 }}
+              tickLine={{ stroke: "#82ca9d" }}
+              domain={[0, "dataMax + 10"]}
+            />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: "#f8f9fa",
+                border: "1px solid #e9ecef",
+              }}
+              formatter={(value, name) => {
+                if (name === "amount") {
+                  return [`${value.toFixed(2)} KR`, "Revenue"];
+                }
+                if (name === "orders") {
+                  return [value, "Orders"];
+                }
+                return [value, name];
+              }}
+            />
+            <Legend />
+            <Area
+              type="monotone"
+              dataKey="amount"
+              fill="#8884d8"
+              stroke="#8884d8"
+              yAxisId="left"
+              fillOpacity={0.3}
+              name="Revenue"
+            />
+            <Bar
+              dataKey="orders"
+              barSize={20}
+              fill="#413ea0"
+              yAxisId="right"
+              name="Orders"
+            />
+          </ComposedChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+function PeakHoursChart({ data }) {
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle>Peak Ordering Hours (Norwegian Time)</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis
+              dataKey="hour"
+              label={{
+                value: "Hour (Norwegian Time)",
+                position: "insideBottomRight",
+                offset: -5,
+              }}
+            />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="count" fill="#82ca9d" />
+          </BarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+
+function TopCustomersTable({ customers }) {
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle>Top Customers</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Email</TableHead>
+              <TableHead>Total Spent</TableHead>
+              <TableHead>Orders</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {customers.slice(0, 5).map((customer) => (
+              <TableRow key={customer.email}>
+                <TableCell>{customer.email}</TableCell>
+                <TableCell>{customer.totalSpent.toFixed(2)} KR</TableCell>
+                <TableCell>{customer.orders}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function BestSellingProductsTable({ products }) {
+  return (
+    <Card className="mt-8">
+      <CardHeader>
+        <CardTitle>Best Selling Products</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Product</TableHead>
+              <TableHead>Quantity Sold</TableHead>
+              <TableHead>Revenue</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {products.slice(0, 5).map((product) => (
+              <TableRow key={product.name}>
+                <TableCell>{product.name}</TableCell>
+                <TableCell>{product.quantity}</TableCell>
+                <TableCell>{product.revenue.toFixed(2)} KR</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
+function calculateOrderTotal(order) {
+  return order.cartProducts.reduce((acc, product) => {
+    const basePrice = product.basePrice || 0;
+    const sizePrice = product.selectedSize?.price || 0;
+    const extrasPrice =
+      product.selectedExtras?.reduce(
+        (sum, extra) => sum + (extra.price || 0),
+        0
+      ) || 0;
+    return (
+      acc + (basePrice + sizePrice + extrasPrice) * (product.quantity || 1)
+    );
+  }, 0);
+}
+
+function calculateProductSales(orders) {
   const productSales = {};
   orders.forEach((order) => {
     order.cartProducts.forEach((product) => {
@@ -138,362 +519,82 @@ export default function AnalyticsPage() {
         productTotal * (product.quantity || 1);
     });
   });
+  return productSales;
+}
 
-  const bestSellingProducts = Object.values(productSales).sort(
-    (a, b) => b.quantity - a.quantity
-  );
+function prepareRevenueData(orders, startDate, endDate) {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const daysDiff = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
 
-  // Prepare data for revenue over time chart
-  const revenueData = orders
-    .filter((order) => order.paid)
-    .map((order) => ({
-      date: dbTimeForHuman(order.createdAt).substring(0, 10), // Get date in "YYYY-MM-DD" format
-      amount: order.cartProducts.reduce((acc, product) => {
-        const productTotal =
-          (product.basePrice || 0) +
-          (product.selectedSize?.price || 0) +
-          (product.selectedExtras?.reduce(
-            (sum, extra) => sum + (extra.price || 0),
-            0
-          ) || 0);
-        return acc + productTotal * (product.quantity || 1);
-      }, 0),
-    }))
-    .reduce((acc, curr) => {
-      const existing = acc.find((item) => item.date === curr.date);
-      if (existing) {
-        existing.amount += curr.amount;
+  let groupBy = 1; // Default to hourly for 'today'
+  if (daysDiff > 1 && daysDiff <= 7) {
+    groupBy = 1; // Daily for last week
+  } else if (daysDiff > 7 && daysDiff <= 30) {
+    groupBy = 2; // Every 2 days for last 30 days
+  } else if (daysDiff > 30) {
+    groupBy = 7; // Weekly for custom longer ranges
+  }
+
+  const revenueData = {};
+  orders.forEach((order) => {
+    if (order.paid) {
+      const date = new Date(order.createdAt);
+      let key;
+      if (groupBy === 1 && daysDiff === 1) {
+        // Hourly for 'today'
+        key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(date.getDate()).padStart(2, "0")}T${String(
+          date.getHours()
+        ).padStart(2, "0")}:00:00`;
       } else {
-        acc.push(curr);
+        // Daily or grouped
+        key = date.toISOString().split("T")[0];
       }
-      return acc;
-    }, []);
+      if (!revenueData[key]) {
+        revenueData[key] = { amount: 0, orders: 0 };
+      }
+      const orderTotal = calculateOrderTotal(order);
+      revenueData[key].amount += orderTotal;
+      revenueData[key].orders += 1;
+    }
+  });
 
-  // Prepare data for pie chart
-  const COLORS = [
-    "#0088FE",
-    "#00C49F",
-    "#FFBB28",
-    "#FF8042",
-    "#8884D8",
-    "#A28CFE",
-    "#FEA8A8",
-    "#8FE8A0",
-    "#F0A0FF",
-    "#FFA07A",
-  ];
-  const pieChartData = bestSellingProducts.map((product, index) => ({
-    name: product.name,
-    value: product.quantity,
-    color: COLORS[index % COLORS.length],
+  const groupedRevenue = Object.entries(revenueData).map(([date, data]) => ({
+    date,
+    amount: data.amount,
+    orders: data.orders,
   }));
 
-  // Peak hours analysis (adjusted for Norwegian time)
-  const ordersByHour = Array(24).fill(0);
+  groupedRevenue.sort((a, b) => new Date(a.date) - new Date(b.date));
 
+  return groupedRevenue;
+}
+
+function prepareHourlyData(orders) {
+  const ordersByHour = Array(24).fill(0);
   orders.forEach((order) => {
     const date = new Date(order.createdAt);
     const norwegianHour = (date.getUTCHours() + 1) % 24; // Adjust for Norwegian time (UTC+1)
     ordersByHour[norwegianHour] += 1;
   });
+  return ordersByHour.map((count, hour) => ({ hour, count }));
+}
 
-  const hourlyData = ordersByHour.map((count, hour) => ({
-    hour,
-    count,
-  }));
-
-  // Top customers
+function calculateTopCustomers(orders) {
   const customerSales = {};
-
   orders.forEach((order) => {
     if (!order.userEmail) return;
     const email = order.userEmail;
     if (!customerSales[email]) {
-      customerSales[email] = {
-        email,
-        totalSpent: 0,
-        orders: 0,
-      };
+      customerSales[email] = { email, totalSpent: 0, orders: 0 };
     }
-    const orderTotal = order.cartProducts.reduce((acc, product) => {
-      const productTotal =
-        (product.basePrice || 0) +
-        (product.selectedSize?.price || 0) +
-        (product.selectedExtras?.reduce(
-          (sum, extra) => sum + (extra.price || 0),
-          0
-        ) || 0);
-      return acc + productTotal * (product.quantity || 1);
-    }, 0);
-    customerSales[email].totalSpent += orderTotal;
+    customerSales[email].totalSpent += calculateOrderTotal(order);
     customerSales[email].orders += 1;
   });
-
-  const topCustomers = Object.values(customerSales).sort(
+  return Object.values(customerSales).sort(
     (a, b) => b.totalSpent - a.totalSpent
-  );
-
-  return (
-    <section className="max-w-6xl mx-auto p-4 mt-[80px]">
-      <UserTabs isAdmin={profile.admin} />
-
-      {/* Date Selection */}
-      <div className="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4 items-start mb-4">
-        {isDateRange ? (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Start Date
-              </label>
-              <input
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                End Date
-              </label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-              />
-            </div>
-          </>
-        ) : (
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Date
-            </label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => {
-                setStartDate(e.target.value);
-                setEndDate(e.target.value); // Ensure endDate matches startDate
-              }}
-              className="mt-1 block w-full border-gray-300 rounded-md shadow-sm"
-            />
-          </div>
-        )}
-        <button
-          onClick={() => setIsDateRange(!isDateRange)}
-          className="mt-6 px-4 py-2 bg-gray-500 text-white rounded-md"
-        >
-          {isDateRange ? "Select Single Date" : "Select Date Range"}
-        </button>
-        <button
-          onClick={fetchOrders}
-          className="mt-6 px-4 py-2 bg-blue-500 text-white rounded-md"
-        >
-          Apply
-        </button>
-      </div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-8">
-        {/* Total Earned */}
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <DollarSign className="h-8 w-8 text-green-500 mr-4" />
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Earned
-              </p>
-              <h3 className="text-2xl font-bold">
-                {totalEarned.toFixed(2)} KR
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-        {/* Total Orders */}
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <ShoppingCart className="h-8 w-8 text-blue-500 mr-4" />
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Total Orders
-              </p>
-              <h3 className="text-2xl font-bold">{totalOrders}</h3>
-            </div>
-          </CardContent>
-        </Card>
-        {/* Average Order Value */}
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <TrendingUp className="h-8 w-8 text-purple-500 mr-4" />
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Average Order Value
-              </p>
-              <h3 className="text-2xl font-bold">
-                {averageOrderValue.toFixed(2)} KR
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-        {/* Top Product */}
-        <Card>
-          <CardContent className="flex items-center p-6">
-            <ArrowUp className="h-8 w-8 text-red-500 mr-4" />
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">
-                Top Product
-              </p>
-              <h3 className="text-2xl font-bold">
-                {bestSellingProducts[0]?.name || "N/A"}
-              </h3>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        {/* Revenue Over Time Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Revenue Over Time</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={revenueData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip formatter={(value) => `${value.toFixed(2)} KR`} />
-                <Line
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="#8884d8"
-                  activeDot={{ r: 8 }}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        {/* Product Distribution Pie Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Product Distribution</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name }) => name}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-                <Legend
-                  layout="vertical"
-                  align="right"
-                  verticalAlign="middle"
-                  payload={pieChartData.map((item) => ({
-                    value: item.name,
-                    type: "square",
-                    color: item.color,
-                  }))}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Peak Hours Analysis */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Peak Ordering Hours (Norwegian Time)</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={hourlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="hour"
-                label={{
-                  value: "Hour (Norwegian Time)",
-                  position: "insideBottomRight",
-                  offset: -5,
-                }}
-              />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="count" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Top Customers */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Top Customers</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Email</TableCell>
-                <TableCell>Total Spent</TableCell>
-                <TableCell>Orders</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {topCustomers.slice(0, 5).map((customer) => (
-                <TableRow key={customer.email}>
-                  <TableCell>{customer.email}</TableCell>
-                  <TableCell>{customer.totalSpent.toFixed(2)} KR</TableCell>
-                  <TableCell>{customer.orders}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      {/* Best Selling Products */}
-      <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Best Selling Products</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Product</TableCell>
-                <TableCell>Quantity Sold</TableCell>
-                <TableCell>Revenue</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {bestSellingProducts.slice(0, 5).map((product) => (
-                <TableRow key={product.name}>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.quantity}</TableCell>
-                  <TableCell>{product.revenue.toFixed(2)} KR</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </section>
   );
 }

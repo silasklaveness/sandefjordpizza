@@ -48,22 +48,6 @@ export default function EditableImage({ link, setLink }) {
               alt="avatar"
               layout="fill"
             />
-            {isHovered && (
-              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-                <label className="cursor-pointer">
-                  <input
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileChange}
-                    accept="image/*"
-                  />
-                  <Button variant="secondary" size="sm">
-                    <Edit2 className="w-4 h-4 mr-2" />
-                    Change Image
-                  </Button>
-                </label>
-              </div>
-            )}
           </>
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">

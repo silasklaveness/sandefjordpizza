@@ -25,7 +25,7 @@ export default function Homemeny() {
   }, []);
 
   return (
-    <section className="py-12">
+    <section className="">
       <div className="container mx-auto px-4">
         <div className="text-center mb-8">
           <SectionHeaders

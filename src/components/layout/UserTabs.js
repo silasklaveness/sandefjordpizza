@@ -1,28 +1,49 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { User, Search, X, Menu, ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  User,
+  Search,
+  X,
+  Menu,
+  ArrowLeft,
+  LayoutGrid,
+  Coffee,
+  Users,
+  ShoppingBag,
+  BarChart3,
+  ChevronDown,
+} from "lucide-react";
 
 const tabVariants = {
-  default: { opacity: 0.7 },
-  active: { opacity: 1 },
+  default: { opacity: 0.7, scale: 1 },
+  active: { opacity: 1, scale: 1.05 },
+  hover: { scale: 1.1 },
 };
 
-const menuVariants = {
+const mobileMenuVariants = {
   closed: { x: "-100%", opacity: 0 },
   open: { x: 0, opacity: 1 },
 };
 
-export default function UserTabs({ isAdmin }) {
+const iconMap = {
+  Profile: User,
+  Categories: LayoutGrid,
+  "Menu Items": Coffee,
+  Users: Users,
+  Orders: ShoppingBag,
+  Oversikt: BarChart3,
+};
+
+export default function AdminNavbar({ isAdmin = false }) {
   const path = usePathname();
   const session = useSession();
   const { status } = session;
@@ -41,27 +62,31 @@ export default function UserTabs({ isAdmin }) {
   }, [status, user]);
 
   const tabs = [
-    { name: "Profile", href: "/profile", icon: User, adminOnly: false },
-    { name: "Categories", href: "/categories", icon: User, adminOnly: true },
-    { name: "Menu Items", href: "/menu-items", icon: User, adminOnly: true },
-    { name: "Users", href: "/users", icon: User, adminOnly: true },
-    { name: "Orders", href: "/orders", icon: User, adminOnly: false },
-    { name: "Oversikt", href: "/oversikt", icon: User, adminOnly: true },
+    { name: "Profile", href: "/profile", adminOnly: false },
+    { name: "Categories", href: "/categories", adminOnly: true },
+    { name: "Menu Items", href: "/menu-items", adminOnly: true },
+    { name: "Users", href: "/users", adminOnly: true },
+    { name: "Orders", href: "/orders", adminOnly: false },
+    { name: "Oversikt", href: "/oversikt", adminOnly: true },
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   const TabContent = () => (
     <>
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-4">
+      <div className="p-4 border-b border-gray-700">
+        <div className="flex items-center justify-between mb-2 mt-2 mr-2">
           <Link href="/">
-            <Button variant="ghost" size="icon" className="mr-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-gray-300 hover:text-white"
+            >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center overflow-hidden">
+          <div className="flex items-center space-x-2">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center overflow-hidden">
               {user?.image ? (
                 <Image
                   className="object-cover w-full h-full"
@@ -71,23 +96,16 @@ export default function UserTabs({ isAdmin }) {
                   height={250}
                 />
               ) : (
-                <User className="text-primary-foreground" />
+                <User className="text-white" />
               )}
             </div>
-            <div>
+            <div className="text-white">
               <p className="font-medium">{user?.name || "User"}</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs text-gray-400">
                 {user?.email || "user@example.com"}
               </p>
             </div>
           </div>
-        </div>
-        <div className="relative">
-          <Search
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-            size={18}
-          />
-          <Input className="pl-8" placeholder="Search" />
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto p-4">
@@ -95,16 +113,17 @@ export default function UserTabs({ isAdmin }) {
           if (tab.adminOnly && !isAdmin) return null;
 
           const isActive = tab.href === path || path.includes(tab.href);
+          const Icon = iconMap[tab.name];
 
           return (
             <Link
               key={tab.name}
               href={tab.href}
               className={cn(
-                "flex items-center space-x-3 py-2 px-3 rounded-md transition-all duration-200 ease-in-out mb-1",
+                "flex items-center space-x-3 py-2 px-3 rounded-md transition-all duration-200 ease-in-out mb-2",
                 isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "hover:bg-muted"
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/50"
+                  : "text-gray-300 hover:bg-gray-800"
               )}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -112,11 +131,10 @@ export default function UserTabs({ isAdmin }) {
                 variants={tabVariants}
                 initial="default"
                 animate={isActive ? "active" : "default"}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover="hover"
                 className="flex items-center space-x-3"
               >
-                <tab.icon className="w-5 h-5" />
+                <Icon className="w-5 h-5" />
                 <span className="text-sm font-medium">{tab.name}</span>
               </motion.div>
             </Link>
@@ -128,25 +146,25 @@ export default function UserTabs({ isAdmin }) {
 
   return (
     <>
+      {/* Mobile menu toggle button */}
       <Button
         onClick={toggleMenu}
-        className="fixed top-4 left-4 z-50 md:hidden"
+        className="fixed top-4 left-4 z-50 md:hidden bg-gray-800 text-white hover:bg-gray-700"
         size="icon"
-        variant="outline"
       >
-        <Menu className="h-4 w-4" />
+        <Menu className="h-5 w-5" />
       </Button>
 
-      {/* Desktop version */}
-      <Card className="w-64 h-screen fixed left-0 top-0 shadow-md flex flex-col hidden md:flex">
+      {/* Desktop sidebar - always visible */}
+      <div className="hidden md:block w-64 h-screen fixed left-0 top-0 bg-gray-900 flex-col overflow-hidden">
         <TabContent />
-      </Card>
+      </div>
 
-      {/* Mobile version */}
+      {/* Mobile sidebar */}
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -158,21 +176,26 @@ export default function UserTabs({ isAdmin }) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="fixed inset-y-0 left-0 z-50 w-64 md:hidden"
-            variants={menuVariants}
+            className="fixed inset-y-0 left-0 z-50 w-64 md:hidden bg-gray-900"
+            variants={mobileMenuVariants}
             initial="closed"
             animate="open"
             exit="closed"
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
           >
-            <Card className="w-full h-full shadow-md flex flex-col">
+            <div className="w-full h-full flex flex-col">
               <div className="flex justify-end p-2">
-                <Button onClick={toggleMenu} size="icon" variant="ghost">
-                  <X className="h-4 w-4" />
+                <Button
+                  onClick={toggleMenu}
+                  size="icon"
+                  variant="ghost"
+                  className="text-gray-300 hover:text-white"
+                >
+                  <X className="h-5 w-5" />
                 </Button>
               </div>
               <TabContent />
-            </Card>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -5,35 +5,20 @@ import { Label } from "@/components/ui/label";
 
 const libraries = ["places"];
 
-export default function CheckoutInputs({
-  addressProps,
-  setAddressProps,
-  deliveryOption,
-  name,
-  setName,
-  email,
-  setEmail,
-  disabled = false,
-}) {
-  const autocompleteInputRef = useRef(null);
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
+export default function AddressInputs({ addressProps, setAddressProps }) {
+  const autocompleteInputRef = useRef(null); // Ref for the autocomplete field
+  const mapRef = useRef(null); // Ref for the map container
+  const markerRef = useRef(null); // Ref for the marker
 
-  const [map, setMap] = useState(null);
-  const [marker, setMarker] = useState(null);
+  const [map, setMap] = useState(null); // Store map instance
+  const [marker, setMarker] = useState(null); // Store marker instance
   const { isLoaded } = useJsApiLoader({
     googleMapsApiKey: process.env.NEXT_PUBLIC_MAPS_API_KEY || "",
     libraries: libraries,
   });
 
   useEffect(() => {
-    if (
-      isLoaded &&
-      mapRef.current &&
-      autocompleteInputRef.current &&
-      !disabled &&
-      deliveryOption === "delivery"
-    ) {
+    if (isLoaded && mapRef.current && autocompleteInputRef.current) {
       // Initialize the map
       const initMap = new google.maps.Map(mapRef.current, {
         center: { lat: 59.911491, lng: 10.757933 }, // Default location (Oslo)
@@ -84,9 +69,10 @@ export default function CheckoutInputs({
         fillFormFields(addressComponents);
       });
     }
-  }, [isLoaded, disabled, deliveryOption]);
+  }, [isLoaded]);
 
   useEffect(() => {
+    // Call geocode when the address from the profile is loaded
     if (addressProps.streetAddress && addressProps.city && map && marker) {
       geocodeAddress(`${addressProps.streetAddress}, ${addressProps.city}`);
     }
@@ -101,7 +87,6 @@ export default function CheckoutInputs({
   };
 
   const fillFormFields = (components) => {
-    if (disabled) return;
     const street = getComponent(components, ["route"]);
     const streetNumber = getComponent(components, ["street_number"]);
     const city = getComponent(components, [
@@ -119,6 +104,7 @@ export default function CheckoutInputs({
     setAddressProps("country", country);
   };
 
+  // Geocode the existing address and place the marker on the map
   const geocodeAddress = (address) => {
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address }, (results, status) => {
@@ -134,98 +120,66 @@ export default function CheckoutInputs({
     });
   };
 
-  const commonFields = [
-    { id: "name", label: "Name", value: name, onChange: setName },
-    {
-      id: "email",
-      label: "Email",
-      type: "email",
-      value: email,
-      onChange: setEmail,
-    },
+  // Form fields definition
+  const inputFields = [
     {
       id: "phone",
       label: "Phone",
       type: "tel",
-      value: addressProps.phone,
-      onChange: (value) => setAddressProps("phone", value),
+      placeholder: "Your phone number",
     },
-  ];
-
-  const deliveryFields = [
     {
       id: "streetAddress",
       label: "Street Address",
-      value: addressProps.streetAddress,
-      onChange: (value) => setAddressProps("streetAddress", value),
+      type: "text",
+      placeholder: "Street address",
     },
     {
       id: "postalCode",
       label: "Postal Code",
-      value: addressProps.postalCode,
-      onChange: (value) => setAddressProps("postalCode", value),
+      type: "text",
+      placeholder: "Postal code",
     },
-    {
-      id: "city",
-      label: "City",
-      value: addressProps.city,
-      onChange: (value) => setAddressProps("city", value),
-    },
-    {
-      id: "country",
-      label: "Country",
-      value: addressProps.country,
-      onChange: (value) => setAddressProps("country", value),
-    },
+    { id: "city", label: "City", type: "text", placeholder: "City" },
+    { id: "country", label: "Country", type: "text", placeholder: "Country" },
   ];
-
-  const inputFields =
-    deliveryOption === "delivery"
-      ? [...commonFields, ...deliveryFields]
-      : commonFields;
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold mb-6">
-        {deliveryOption === "delivery"
-          ? "Delivery Information"
-          : "Contact Information"}
-      </h2>
+      <h2 className="text-2xl font-bold mb-6">Delivery Information</h2>
 
-      {!disabled && deliveryOption === "delivery" && (
-        <div className="space-y-2 mb-4">
-          <Label htmlFor="autocompleteAddress">Search for Address</Label>
-          <Input
-            id="autocompleteAddress"
-            ref={autocompleteInputRef}
-            type="text"
-            placeholder="Start typing your address"
-          />
-        </div>
-      )}
+      {/* Autocomplete input for filling out the address */}
+      <div className="space-y-2">
+        <Label htmlFor="autocompleteAddress">Search for Address</Label>
+        <Input
+          id="autocompleteAddress"
+          ref={autocompleteInputRef} // Attach autocomplete ref to this input
+          type="text"
+          placeholder="Start typing your address"
+        />
+      </div>
 
-      <div className="space-y-4">
+      {/* Existing form fields */}
+      <div className="space-y-4 mt-6">
         {inputFields.map((field) => (
           <div key={field.id} className="space-y-2">
             <Label htmlFor={field.id}>{field.label}</Label>
             <Input
               id={field.id}
-              type={field.type || "text"}
-              value={field.value || ""}
-              onChange={(ev) => !disabled && field.onChange(ev.target.value)}
-              placeholder={`Enter your ${field.label.toLowerCase()}`}
-              disabled={disabled}
+              type={field.type}
+              value={addressProps[field.id] || ""}
+              onChange={(ev) => setAddressProps(field.id, ev.target.value)}
+              placeholder={field.placeholder}
             />
           </div>
         ))}
       </div>
 
-      {!disabled && deliveryOption === "delivery" && (
-        <div
-          ref={mapRef}
-          style={{ height: "200px", width: "100%", marginTop: "20px" }}
-        />
-      )}
+      {/* Map showing the selected address */}
+      <div
+        ref={mapRef}
+        style={{ height: "200px", width: "100%", marginTop: "20px" }}
+      />
     </div>
   );
 }
