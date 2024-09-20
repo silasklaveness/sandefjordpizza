@@ -13,6 +13,7 @@ import Homemeny from "../components/layout/HomeMeny";
 import SectionHeaders from "@/components/layout/SectionHeaders";
 import { ChevronDown, Phone, Clock, MapPin } from "lucide-react";
 import { RestaurantContext } from "@/components/RestaurantContext"; // Import the RestaurantContext
+import Footer from "@/components/layout/Footer";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -161,7 +162,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="py-16 px-4 md:px-8 border-t border-gray-200">
+        <div id="about" className="py-16 px-4 md:px-8 border-t border-gray-200">
           <div className="text-center">
             <SectionHeaders subHeader={"Vår historie"} mainHeader={"Om oss"} />
           </div>
@@ -185,7 +186,10 @@ export default function Home() {
           </motion.div>
         </div>
 
-        <div className="text-center py-24 px-4 md:px-8 border-t border-gray-200">
+        <section
+          id="contact"
+          className="text-center py-24 px-4 md:px-8 border-t border-gray-200"
+        >
           <div className="text-center">
             <SectionHeaders
               subHeader={"Ikke nøl"}
@@ -201,7 +205,8 @@ export default function Home() {
             <Phone className="w-12 h-12" />
             +47 45786703
           </motion.a>
-        </div>
+        </section>
+        <Footer />
       </motion.div>
     </div>
   );

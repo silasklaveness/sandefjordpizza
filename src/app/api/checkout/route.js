@@ -9,8 +9,17 @@ const stripe = require("stripe")(process.env.STRIPE_SK);
 export async function POST(req) {
   mongoose.connect(process.env.MONGO_URL);
 
-  const { name, email, cartProducts, address } = await req.json();
-  console.log("cartProducts", cartProducts, address, name, email);
+  const { name, email, cartProducts, address, scheduledTime, deliveryOption } =
+    await req.json();
+  console.log(
+    "cartProducts",
+    cartProducts,
+    address,
+    name,
+    email,
+    scheduledTime,
+    deliveryOption
+  );
   const session = await getServerSession(authOptions);
   const userEmail = session?.user?.email || email;
   const userName = session?.user?.name || name;
@@ -21,6 +30,8 @@ export async function POST(req) {
     ...address,
     cartProducts,
     paid: false,
+    scheduledTime,
+    deliveryOption,
   });
 
   const stripeLineItems = [];

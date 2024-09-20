@@ -11,6 +11,13 @@ const OrderSchema = new Schema(
     country: String,
     cartProducts: Object,
     paid: { type: Boolean, default: false },
+    scheduledTime: { type: Date },
+    deliveryOption: {
+      type: String,
+      enum: ["delivery", "pickup"],
+      required: true,
+    },
+    status: { type: String, enum: ["pending", "done"], default: "pending" },
   },
   { timestamps: true }
 );

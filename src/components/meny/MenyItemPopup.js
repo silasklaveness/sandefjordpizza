@@ -66,9 +66,9 @@ export default function MenyItemPopup({
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800">
+      <DialogContent className="sm:max-w-[425px] bg-white ">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-white">
+          <DialogTitle className="text-2xl font-bold text-gray-900 ">
             {name}
           </DialogTitle>
         </DialogHeader>
@@ -83,12 +83,10 @@ export default function MenyItemPopup({
                 className="mx-auto rounded-lg shadow-md"
               />
             )}
-            <p className="text-center text-gray-600 dark:text-gray-300">
-              {description}
-            </p>
+            <p className="text-center text-gray-600 ">{description}</p>
             {sizes?.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">
+              <div className="bg-gray-50  p-4 rounded-lg">
+                <h3 className="font-semibold mb-3 text-gray-800 ">
                   Pick your size
                 </h3>
                 <RadioGroup
@@ -107,10 +105,7 @@ export default function MenyItemPopup({
                         id={size.name}
                         className="border-blue-500 text-blue-500"
                       />
-                      <Label
-                        htmlFor={size.name}
-                        className="text-gray-700 dark:text-gray-300"
-                      >
+                      <Label htmlFor={size.name} className="text-gray-700">
                         {size.name} {basePrice + size.price}KR
                       </Label>
                     </div>
@@ -119,8 +114,8 @@ export default function MenyItemPopup({
               </div>
             )}
             {extraIngredientsPrices?.length > 0 && (
-              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <h3 className="font-semibold mb-3 text-gray-800">
                   Any extras?
                 </h3>
                 {extraIngredientsPrices.map((extraThing) => (
@@ -185,7 +180,7 @@ export default function MenyItemPopup({
           <Button
             variant="outline"
             onClick={onClose}
-            className="border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="border-gray-300 text-gray-700 hover:bg-gray-100 "
           >
             Cancel
           </Button>

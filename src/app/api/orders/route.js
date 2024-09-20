@@ -1,3 +1,5 @@
+// pages/api/orders.js
+
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { Order } from "@/app/models/Order";
@@ -13,6 +15,8 @@ export async function GET(req) {
     const _id = url.searchParams.get("_id");
     const startDate = url.searchParams.get("startDate");
     const endDate = url.searchParams.get("endDate");
+    const paid = url.searchParams.get("paid"); // Added for filtering paid/unpaid orders
+    const status = url.searchParams.get("status"); // Added for filtering by status
 
     // Initialize filter object
     let filter = {};
@@ -63,6 +67,16 @@ export async function GET(req) {
       }
     }
 
+    // Apply paid filter if provided
+    if (paid !== null && paid !== undefined) {
+      filter.paid = paid === "true";
+    }
+
+    // Apply status filter if provided
+    if (status) {
+      filter.status = status;
+    }
+
     // If the user is not an admin, restrict the query to their own orders
     if (!admin && userEmail) {
       filter.userEmail = userEmail;
@@ -80,6 +94,92 @@ export async function GET(req) {
     return new Response(JSON.stringify(orders), { status: 200 });
   } catch (error) {
     console.error("Error fetching orders: ", error);
+    return new Response(JSON.stringify({ message: "Internal Server Error" }), {
+      status: 500,
+    });
+  }
+}
+
+export async function PUT(req) {
+  try {
+    // Connect to the MongoDB database
+    await mongoose.connect(process.env.MONGO_URL);
+
+    // Get the session information
+    const session = await getServerSession(authOptions);
+
+    // If no session is found, return unauthorized
+    if (!session) {
+      return new Response(JSON.stringify({ message: "Unauthorized" }), {
+        status: 401,
+      });
+    }
+
+    // Check if the current user is an admin
+    const admin = await isAdmin(session);
+
+    // If the user is not an admin, forbid the action
+    if (!admin) {
+      return new Response(
+        JSON.stringify({ message: "Forbidden: Admins only" }),
+        {
+          status: 403,
+        }
+      );
+    }
+
+    // Parse the request body
+    const { orderId, status } = await req.json();
+
+    // Validate request body
+    if (!orderId || !status) {
+      return new Response(
+        JSON.stringify({ message: "Missing orderId or status" }),
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // Validate status value
+    const validStatuses = ["pending", "done"];
+    if (!validStatuses.includes(status)) {
+      return new Response(
+        JSON.stringify({
+          message: `Invalid status. Valid statuses are: ${validStatuses.join(
+            ", "
+          )}`,
+        }),
+        { status: 400 }
+      );
+    }
+
+    // Find and update the order
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      { status },
+      { new: true }
+    );
+
+    // If order not found, return 404
+    if (!updatedOrder) {
+      return new Response(JSON.stringify({ message: "Order not found" }), {
+        status: 404,
+      });
+    }
+
+    // Return the updated order
+    return new Response(
+      JSON.stringify({
+        message: "Order updated successfully",
+        order: updatedOrder,
+      }),
+      {
+        status: 200,
+      }
+    );
+  } catch (error) {
+    console.error("Error updating order: ", error);
     return new Response(JSON.stringify({ message: "Internal Server Error" }), {
       status: 500,
     });

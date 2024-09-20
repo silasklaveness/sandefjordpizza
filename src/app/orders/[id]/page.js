@@ -18,6 +18,8 @@ import {
   CreditCard,
   Clock,
   Store,
+  Truck,
+  Calendar,
 } from "lucide-react";
 
 export default function OrderPage() {
@@ -71,7 +73,8 @@ export default function OrderPage() {
     );
   }
 
-  const isDeliveryOrder = order.streetAddress && order.city && order.country;
+  const isDeliveryOrder = order.deliveryOption === "delivery";
+  const isScheduledOrder = order.scheduledTime;
 
   const subtotal =
     order.cartProducts && order.cartProducts.length > 0
@@ -92,6 +95,18 @@ export default function OrderPage() {
 
   const deliveryFee = isDeliveryOrder ? 5 : 0;
   const total = subtotal + deliveryFee;
+
+  const formatScheduledTime = (scheduledTime) => {
+    const date = new Date(scheduledTime);
+    return date.toLocaleString("no-NO", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
   return (
     <motion.section
@@ -118,7 +133,15 @@ export default function OrderPage() {
             Takk for din bestilling!
           </h2>
           <p className="text-gray-600 mt-2">
-            {isDeliveryOrder
+            {isScheduledOrder
+              ? isDeliveryOrder
+                ? `Din bestilling vil bli levert rundt ${formatScheduledTime(
+                    order.scheduledTime
+                  )}.`
+                : `Du kan hente din bestilling ${formatScheduledTime(
+                    order.scheduledTime
+                  )}.`
+              : isDeliveryOrder
               ? "Vi ringer deg når din bestilling er på vei."
               : "Vi ringer deg når din bestilling er klar for henting."}
           </p>
@@ -155,7 +178,7 @@ export default function OrderPage() {
             <Separator className="my-4" />
             {isDeliveryOrder ? (
               <>
-                <h3 className="font-semibold mb-2">Delivery Address</h3>
+                <h3 className="font-semibold mb-2">Delivery Information</h3>
                 <ul className="space-y-2">
                   <li className="flex items-center">
                     <MapPin className="w-5 h-5 mr-2 text-gray-500" />
@@ -169,6 +192,12 @@ export default function OrderPage() {
                     <MapPin className="w-5 h-5 mr-2 text-gray-500 opacity-0" />
                     {order.country}
                   </li>
+                  {isScheduledOrder && (
+                    <li className="flex items-center">
+                      <Calendar className="w-5 h-5 mr-2 text-gray-500" />
+                      Scheduled for: {formatScheduledTime(order.scheduledTime)}
+                    </li>
+                  )}
                 </ul>
               </>
             ) : (
@@ -181,11 +210,19 @@ export default function OrderPage() {
                   </li>
                   <li className="flex items-center">
                     <Clock className="w-5 h-5 mr-2 text-gray-500" />
-                    Estimated pickup time:{" "}
-                    {new Date(order.createdAt).getTime() + 30 * 60000 >
-                    new Date().getTime()
-                      ? "30 minutes"
-                      : "Ready for pickup"}
+                    {isScheduledOrder ? (
+                      <>
+                        Pickup time: {formatScheduledTime(order.scheduledTime)}
+                      </>
+                    ) : (
+                      <>
+                        Estimated pickup time:{" "}
+                        {new Date(order.createdAt).getTime() + 30 * 60000 >
+                        new Date().getTime()
+                          ? "30 minutes"
+                          : "Ready for pickup"}
+                      </>
+                    )}
                   </li>
                 </ul>
               </>
@@ -284,6 +321,12 @@ export default function OrderPage() {
             <div className="mt-2 text-sm text-gray-600">
               Order placed on: {new Date(order.createdAt).toLocaleString()}
             </div>
+            {isScheduledOrder && (
+              <div className="mt-2 flex items-center text-sm text-gray-600">
+                <Calendar className="w-4 h-4 mr-2" />
+                Scheduled for: {formatScheduledTime(order.scheduledTime)}
+              </div>
+            )}
           </CardContent>
         </Card>
       </motion.div>

@@ -8,11 +8,8 @@ import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   User,
-  Search,
-  X,
   Menu,
   ArrowLeft,
   LayoutGrid,
@@ -20,7 +17,7 @@ import {
   Users,
   ShoppingBag,
   BarChart3,
-  ChevronDown,
+  X,
 } from "lucide-react";
 
 const tabVariants = {
@@ -45,8 +42,7 @@ const iconMap = {
 
 export default function AdminNavbar({ isAdmin = false }) {
   const path = usePathname();
-  const session = useSession();
-  const { status } = session;
+  const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -71,6 +67,11 @@ export default function AdminNavbar({ isAdmin = false }) {
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  // If the user is not authenticated, don't render anything
+  if (status !== "authenticated") {
+    return null;
+  }
 
   const TabContent = () => (
     <>

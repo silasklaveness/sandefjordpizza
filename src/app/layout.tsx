@@ -6,6 +6,7 @@ import AppProvider from "@/components/AppContext";
 
 import Header from "@/components/layout/Header";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
 
 const roboto = Roboto({ subsets: ["latin"], weight: ["400", "500", "700"] });
 
@@ -29,6 +30,7 @@ export default function RootLayout({
 
             {children}
           </AppProvider>
+          <Analytics />
         </main>
       </body>
     </html>
