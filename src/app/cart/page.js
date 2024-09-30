@@ -36,6 +36,25 @@ export default function CartPage() {
   const [scheduledDate, setScheduledDate] = useState("");
   const [scheduledTime, setScheduledTime] = useState("");
   const [isScheduling, setIsScheduling] = useState(false);
+  const [restaurantData, setRestaurantData] = useState(null);
+
+  useEffect(() => {
+    const fetchRestaurantData = async () => {
+      try {
+        const response = await fetch("/api/restaurant");
+        if (!response.ok) {
+          throw new Error("Failed to fetch restaurant data");
+        }
+        const data = await response.json();
+        setRestaurantData(data);
+      } catch (err) {
+        console.error("Error fetching restaurant data:", err);
+        toast.error("Could not fetch restaurant data");
+      }
+    };
+
+    fetchRestaurantData();
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -47,32 +66,23 @@ export default function CartPage() {
 
   useEffect(() => {
     const checkOpeningHours = () => {
-      const day = currentTime.getDay();
-      const hours = currentTime.getHours();
-      const minutes = currentTime.getMinutes();
-      const currentTimeInMinutes = hours * 60 + minutes;
+      if (!restaurantData) return;
 
-      let isOpen = false;
+      const now = currentTime;
+      const today = now.toISOString().split("T")[0];
+      const currentTimeString = now.toTimeString().slice(0, 5);
 
-      if (day >= 1 && day <= 4) {
-        // Monday to Thursday
-        isOpen =
-          currentTimeInMinutes >= 14 * 60 && currentTimeInMinutes < 22 * 60;
-      } else if (day === 5 || day === 6) {
-        // Friday and Saturday
-        isOpen =
-          currentTimeInMinutes >= 13 * 60 && currentTimeInMinutes < 23 * 60;
-      } else if (day === 0) {
-        // Sunday
-        isOpen =
-          currentTimeInMinutes >= 13 * 60 && currentTimeInMinutes < 22 * 60;
-      }
+      const openingHours = getOpeningHours(today);
 
-      setIsWithinOpeningHours(isOpen);
+      setIsWithinOpeningHours(
+        openingHours &&
+          currentTimeString >= openingHours.open &&
+          currentTimeString < openingHours.close
+      );
     };
 
     checkOpeningHours();
-  }, [currentTime]);
+  }, [currentTime, restaurantData]);
 
   useEffect(() => {
     if (profileData) {
@@ -118,13 +128,21 @@ export default function CartPage() {
     setAddress((prev) => ({ ...prev, [propName]: value }));
   }
 
-  const getOpeningHours = (day) => {
-    if (day >= 1 && day <= 4) {
-      return { open: 14, close: 22 };
-    } else if (day === 5 || day === 6 || day === 0) {
-      return { open: 13, close: 23 };
+  const getOpeningHours = (date) => {
+    if (!restaurantData) return { open: "12:00", close: "22:00" };
+
+    const specialOccasion = restaurantData.specialOccasions.find(
+      (so) => so.date === date
+    );
+    if (specialOccasion) {
+      return specialOccasion.isClosed
+        ? null
+        : { open: specialOccasion.open, close: specialOccasion.close };
     }
-    return null;
+
+    return (
+      restaurantData.openingTimes[date] || { open: "12:00", close: "22:00" }
+    );
   };
 
   const handleScheduleOrder = (selectedDate, selectedTime) => {
@@ -134,16 +152,11 @@ export default function CartPage() {
     }
 
     const selectedDateTime = new Date(`${selectedDate}T${selectedTime}`);
-    const day = selectedDateTime.getDay();
-    const hours = selectedDateTime.getHours();
-    const minutes = selectedDateTime.getMinutes();
-
-    const openingHours = getOpeningHours(day);
+    const openingHours = getOpeningHours(selectedDate);
 
     if (openingHours) {
       const { open, close } = openingHours;
-      if (hours >= open && hours < close) {
-        // Additional check to ensure the scheduled time is in the future
+      if (selectedTime >= open && selectedTime < close) {
         if (selectedDateTime < new Date()) {
           toast.error("Scheduled time must be in the future.");
           return;
@@ -159,12 +172,35 @@ export default function CartPage() {
         );
       }
     } else {
-      toast.error("Invalid day selected. Please choose a valid day.");
+      toast.error(
+        "Restaurant is closed on the selected date. Please choose another date."
+      );
     }
   };
 
   const getMinScheduleDate = () => {
     const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    const openingHours = getOpeningHours(today);
+
+    if (openingHours) {
+      const [closeHour, closeMinute] = openingHours.close
+        .split(":")
+        .map(Number);
+      const closeTime = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        closeHour,
+        closeMinute
+      );
+
+      if (now > closeTime) {
+        // If current time is after closing time, set min date to tomorrow
+        now.setDate(now.getDate() + 1);
+      }
+    }
+
     return now.toISOString().split("T")[0];
   };
 
@@ -175,26 +211,38 @@ export default function CartPage() {
   };
 
   const getAvailableTimes = (date) => {
-    const selectedDay = new Date(date).getDay();
-    const openingHours = getOpeningHours(selectedDay);
+    const openingHours = getOpeningHours(date);
 
     if (!openingHours) return [];
 
     const times = [];
-    const { open, close } = openingHours;
+    const [openHour, openMinute] = openingHours.open.split(":").map(Number);
+    const [closeHour, closeMinute] = openingHours.close.split(":").map(Number);
 
-    // Generate times in 30-minute intervals
-    for (let hour = open; hour < close; hour++) {
-      times.push(`${hour.toString().padStart(2, "0")}:00`);
-      times.push(`${hour.toString().padStart(2, "0")}:30`);
+    const now = new Date();
+    const selectedDate = new Date(date);
+    const isToday = selectedDate.toDateString() === now.toDateString();
+
+    for (let hour = openHour; hour < closeHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === closeHour && minute >= closeMinute) break;
+        if (hour === openHour && minute < openMinute) continue;
+
+        const timeString = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+
+        if (isToday) {
+          const currentTime = now.getHours() * 60 + now.getMinutes();
+          const slotTime = hour * 60 + minute;
+          if (slotTime <= currentTime) continue;
+        }
+
+        times.push(timeString);
+      }
     }
 
-    // Remove times that are equal to or after closing time
-    // For example, if close is 22, remove 22:00 and onwards
-    return times.filter((time) => {
-      const [h, m] = time.split(":").map(Number);
-      return h < close || (h === close && m === 0);
-    });
+    return times;
   };
 
   async function proceedToCheckout(ev) {
@@ -359,7 +407,11 @@ export default function CartPage() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setDeliveryOption("pickup")}
+                  onClick={() =>
+                    setDeliveryOption(
+                      deliveryOption === "pickup" ? null : "pickup"
+                    )
+                  }
                   className={`flex-1 p-4 rounded-lg border-2 ${
                     deliveryOption === "pickup"
                       ? "border-primary bg-primary/10"
@@ -375,7 +427,11 @@ export default function CartPage() {
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  onClick={() => setDeliveryOption("delivery")}
+                  onClick={() =>
+                    setDeliveryOption(
+                      deliveryOption === "delivery" ? null : "delivery"
+                    )
+                  }
                   className={`flex-1 p-4 rounded-lg border-2 ${
                     deliveryOption === "delivery"
                       ? "border-primary bg-primary/10"
@@ -418,7 +474,6 @@ export default function CartPage() {
                       value={scheduledDate}
                       onChange={(e) => {
                         setScheduledDate(e.target.value);
-                        // Reset time when date changes
                         setScheduledTime("");
                       }}
                       min={getMinScheduleDate()}

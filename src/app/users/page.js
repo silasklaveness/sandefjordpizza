@@ -1,129 +1,125 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import UserTabs from "@/components/layout/UserTabs";
-import { UseProfile } from "@/components/UseProfile";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Edit, User, Shield, ShieldOff } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import UserTabs from "@/components/layout/UserTabs";
+import { User } from "lucide-react";
+import { UseProfile } from "@/components/UseProfile";
+
+const roleColors = {
+  Admin: "bg-red-500",
+  Employee: "bg-blue-500",
+  Customer: "bg-green-500",
+};
 
 export default function UsersPage() {
-  const [users, setUsers] = useState([]);
   const { loading, data } = UseProfile();
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [selectedRole, setSelectedRole] = useState("All");
 
   useEffect(() => {
-    fetch("/api/users").then((response) => {
-      response.json().then((users) => {
-        setUsers(users);
-      });
-    });
+    async function fetchUsers() {
+      try {
+        const response = await fetch("/api/users");
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        const data = await response.json();
+        const usersWithRoles = data.map((user) => ({
+          ...user,
+          role: user.admin ? "Admin" : user.employee ? "Employee" : "Customer",
+        }));
+        setUsers(usersWithRoles);
+        setFilteredUsers(usersWithRoles);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    }
+    fetchUsers();
   }, []);
 
+  useEffect(() => {
+    if (selectedRole === "All") {
+      setFilteredUsers(users);
+    } else {
+      setFilteredUsers(users.filter((user) => user.role === selectedRole));
+    }
+  }, [selectedRole, users]);
+
+  function handleRoleChange(e) {
+    setSelectedRole(e.target.value);
+  }
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-      </div>
-    );
+    return <div>Loading...</div>;
   }
 
   if (!data.admin) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-2xl font-bold text-red-500">Not an admin</div>
-      </div>
-    );
+    return <div>Not authorized</div>;
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-grow flex flex-col md:flex-row">
-        <div className="md:w-64 md:flex-shrink-0">
-          <UserTabs isAdmin={true} />
+    <section className="mt-8 mx-auto max-w-2xl">
+      <UserTabs isAdmin={data.admin} />
+      <div className="mt-8">
+        <h1 className="text-3xl font-bold mb-6 text-yellow-400">
+          User Management
+        </h1>
+        <div className="mb-4">
+          <label htmlFor="role-filter" className="mr-2 text-gray-300">
+            Filter by role:
+          </label>
+          <select
+            id="role-filter"
+            value={selectedRole}
+            onChange={handleRoleChange}
+            className="bg-gray-800 text-white rounded px-2 py-1"
+          >
+            <option value="All">All Roles</option>
+            <option value="Admin">Admin</option>
+            <option value="Employee">Employee</option>
+            <option value="Customer">Customer</option>
+          </select>
         </div>
-        <main className="flex-grow p-4 md:p-6 lg:p-8 overflow-x-hidden">
-          <div className="max-w-6xl mx-auto mt-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl font-bold flex items-center gap-2">
-                  <User className="w-6 h-6" />
-                  Users
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {users?.length > 0 ? (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>Role</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {users.map((user) => (
-                          <TableRow key={user._id}>
-                            <TableCell className="font-medium">
-                              {user.name ? (
-                                user.name
-                              ) : (
-                                <span className="italic text-gray-500">
-                                  No name
-                                </span>
-                              )}
-                            </TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              {user.admin ? (
-                                <Badge
-                                  variant="default"
-                                  className="bg-primary text-primary-foreground"
-                                >
-                                  <Shield className="w-3 h-3 mr-1" />
-                                  Admin
-                                </Badge>
-                              ) : (
-                                <Badge variant="secondary">
-                                  <ShieldOff className="w-3 h-3 mr-1" />
-                                  User
-                                </Badge>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button asChild variant="outline" size="sm">
-                                <Link href={`/users/${user._id}`}>
-                                  <Edit className="w-4 h-4 mr-2" />
-                                  Edit
-                                </Link>
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+        <div className="grid gap-6">
+          {filteredUsers.map((user) => (
+            <div
+              key={user._id}
+              className="bg-gray-900 p-6 rounded-lg shadow-lg"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center mr-4">
+                    <User className="w-6 h-6 text-black" />
                   </div>
-                ) : (
-                  <div className="text-center py-4 text-gray-500">
-                    No users found
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      {user.name}
+                    </h2>
+                    <p className="text-gray-400">{user.email}</p>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </main>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span
+                    className={`text-sm font-bold px-2 py-1 rounded ${
+                      roleColors[user.role]
+                    }`}
+                  >
+                    {user.role}
+                  </span>
+                  <Link
+                    href={`/users/${user._id}`}
+                    className="px-4 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-300"
+                  >
+                    Edit
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

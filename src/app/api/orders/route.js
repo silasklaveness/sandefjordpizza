@@ -3,7 +3,7 @@
 import mongoose from "mongoose";
 import { getServerSession } from "next-auth";
 import { Order } from "@/app/models/Order";
-import { authOptions, isAdmin } from "@/app/utils/authOptions";
+import { authOptions, isAdmin, isEmployee } from "@/app/utils/authOptions";
 
 export async function GET(req) {
   try {

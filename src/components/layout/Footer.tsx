@@ -13,16 +13,16 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer className="bg-black text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* Restaurant Info */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
-              Gourmet Delights
+            <h3 className="text-yellow-400 text-lg font-semibold mb-4">
+              Sandefjord Pizza
             </h3>
             <p className="mb-4">
-              Experience culinary excellence with our diverse menu and
+              Experience authentic Italian flavors with our diverse menu and
               exceptional service.
             </p>
             <div className="flex space-x-4">
@@ -32,7 +32,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 aria-label="Facebook"
               >
-                <Facebook className="h-6 w-6 hover:text-blue-500 transition-colors" />
+                <Facebook className="h-6 w-6 hover:text-yellow-400 transition-colors" />
               </a>
               <a
                 href="https://instagram.com"
@@ -40,7 +40,7 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 aria-label="Instagram"
               >
-                <Instagram className="h-6 w-6 hover:text-pink-500 transition-colors" />
+                <Instagram className="h-6 w-6 hover:text-yellow-400 transition-colors" />
               </a>
               <a
                 href="https://twitter.com"
@@ -48,26 +48,29 @@ export default function Footer() {
                 rel="noopener noreferrer"
                 aria-label="Twitter"
               >
-                <Twitter className="h-6 w-6 hover:text-blue-400 transition-colors" />
+                <Twitter className="h-6 w-6 hover:text-yellow-400 transition-colors" />
               </a>
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-yellow-400 text-lg font-semibold mb-4">
               Quick Links
             </h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/" className="hover:text-white transition-colors">
+                <Link
+                  href="/"
+                  className="hover:text-yellow-400 transition-colors"
+                >
                   Home
                 </Link>
               </li>
               <li>
                 <Link
                   href="/menu"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Menu
                 </Link>
@@ -75,7 +78,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/reservations"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Reservations
                 </Link>
@@ -83,7 +86,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/about"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   About Us
                 </Link>
@@ -91,7 +94,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/contact"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Contact
                 </Link>
@@ -101,14 +104,14 @@ export default function Footer() {
 
           {/* Customer Services */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-yellow-400 text-lg font-semibold mb-4">
               Customer Services
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link
                   href="/account/login"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Login
                 </Link>
@@ -116,7 +119,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/account/register"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Register
                 </Link>
@@ -124,7 +127,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/account/orders"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Order History
                 </Link>
@@ -132,25 +135,9 @@ export default function Footer() {
               <li>
                 <Link
                   href="/faq"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   FAQ
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/privacy-policy"
-                  className="hover:text-white transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms-of-service"
-                  className="hover:text-white transition-colors"
-                >
-                  Terms of Service
                 </Link>
               </li>
             </ul>
@@ -158,35 +145,35 @@ export default function Footer() {
 
           {/* Contact Information */}
           <div>
-            <h3 className="text-white text-lg font-semibold mb-4">
+            <h3 className="text-yellow-400 text-lg font-semibold mb-4">
               Contact Us
             </h3>
             <ul className="space-y-2">
               <li className="flex items-center">
-                <MapPin className="h-5 w-5 mr-2" />
-                <span>123 Gourmet Street, Foodville, FK 12345</span>
+                <MapPin className="h-5 w-5 mr-2 text-yellow-400" />
+                <span>123 Pizza Street, Sandefjord, Norway</span>
               </li>
               <li className="flex items-center">
-                <Phone className="h-5 w-5 mr-2" />
+                <Phone className="h-5 w-5 mr-2 text-yellow-400" />
                 <a
-                  href="tel:+11234567890"
-                  className="hover:text-white transition-colors"
+                  href="tel:+4712345678"
+                  className="hover:text-yellow-400 transition-colors"
                 >
-                  +1 (123) 456-7890
+                  +47 123 45 678
                 </a>
               </li>
               <li className="flex items-center">
-                <Mail className="h-5 w-5 mr-2" />
+                <Mail className="h-5 w-5 mr-2 text-yellow-400" />
                 <a
-                  href="mailto:info@gourmetdelights.com"
-                  className="hover:text-white transition-colors"
+                  href="mailto:info@sandefjordpizza.com"
+                  className="hover:text-yellow-400 transition-colors"
                 >
-                  info@gourmetdelights.com
+                  info@sandefjordpizza.com
                 </a>
               </li>
               <li className="flex items-center">
-                <Clock className="h-5 w-5 mr-2" />
-                <span>Mon-Sat: 11AM - 10PM, Sun: 12PM - 9PM</span>
+                <Clock className="h-5 w-5 mr-2 text-yellow-400" />
+                <span>Mon-Sun: 11AM - 11PM</span>
               </li>
             </ul>
           </div>
@@ -194,19 +181,19 @@ export default function Footer() {
 
         {/* Newsletter Subscription */}
         <div className="mt-12 border-t border-gray-800 pt-8">
-          <h3 className="text-white text-lg font-semibold mb-4">
+          <h3 className="text-yellow-400 text-lg font-semibold mb-4">
             Subscribe to Our Newsletter
           </h3>
           <form className="flex flex-col sm:flex-row gap-4">
             <input
               type="email"
               placeholder="Enter your email"
-              className="flex-grow px-4 py-2 bg-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="flex-grow px-4 py-2 bg-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
               required
             />
             <button
               type="submit"
-              className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+              className="px-6 py-2 bg-yellow-400 text-black rounded-md hover:bg-yellow-500 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-black"
             >
               Subscribe
             </button>
@@ -215,29 +202,29 @@ export default function Footer() {
 
         {/* Copyright and Additional Links */}
         <div className="mt-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p>&copy; {currentYear} Gourmet Delights. All rights reserved.</p>
+          <p>&copy; {currentYear} Sandefjord Pizza. All rights reserved.</p>
           <nav className="mt-4 md:mt-0">
             <ul className="flex space-x-4">
               <li>
                 <Link
-                  href="/sitemap"
-                  className="hover:text-white transition-colors"
+                  href="/privacy-policy"
+                  className="hover:text-yellow-400 transition-colors"
                 >
-                  Sitemap
+                  Privacy Policy
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/accessibility"
-                  className="hover:text-white transition-colors"
+                  href="/terms-of-service"
+                  className="hover:text-yellow-400 transition-colors"
                 >
-                  Accessibility
+                  Terms of Service
                 </Link>
               </li>
               <li>
                 <Link
                   href="/cookie-policy"
-                  className="hover:text-white transition-colors"
+                  className="hover:text-yellow-400 transition-colors"
                 >
                   Cookie Policy
                 </Link>

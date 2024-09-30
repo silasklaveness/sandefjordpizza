@@ -38,6 +38,7 @@ const iconMap = {
   Users: Users,
   Orders: ShoppingBag,
   Oversikt: BarChart3,
+  Restaurant: LayoutGrid,
 };
 
 export default function AdminNavbar({ isAdmin = false }) {
@@ -64,6 +65,7 @@ export default function AdminNavbar({ isAdmin = false }) {
     { name: "Users", href: "/users", adminOnly: true },
     { name: "Orders", href: "/orders", adminOnly: false },
     { name: "Oversikt", href: "/oversikt", adminOnly: true },
+    { name: "Restaurant", href: "/restaurant", adminOnly: true },
   ];
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -75,19 +77,19 @@ export default function AdminNavbar({ isAdmin = false }) {
 
   const TabContent = () => (
     <>
-      <div className="p-4 border-b border-gray-700">
+      <div className="p-4 border-b border-yellow-400">
         <div className="flex items-center justify-between mb-2 mt-2 mr-2">
           <Link href="/">
             <Button
               variant="ghost"
               size="icon"
-              className="text-gray-300 hover:text-white"
+              className="text-yellow-400 hover:text-yellow-300"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
           </Link>
           <div className="flex items-center space-x-2">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-blue-500 flex items-center justify-center overflow-hidden">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center overflow-hidden">
               {user?.image ? (
                 <Image
                   className="object-cover w-full h-full"
@@ -97,12 +99,12 @@ export default function AdminNavbar({ isAdmin = false }) {
                   height={250}
                 />
               ) : (
-                <User className="text-white" />
+                <User className="text-black" />
               )}
             </div>
-            <div className="text-white">
+            <div className="text-yellow-100">
               <p className="font-medium">{user?.name || "User"}</p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-yellow-400">
                 {user?.email || "user@example.com"}
               </p>
             </div>
@@ -123,8 +125,8 @@ export default function AdminNavbar({ isAdmin = false }) {
               className={cn(
                 "flex items-center space-x-3 py-2 px-3 rounded-md transition-all duration-200 ease-in-out mb-2",
                 isActive
-                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/50"
-                  : "text-gray-300 hover:bg-gray-800"
+                  ? "bg-yellow-400 text-black shadow-lg shadow-yellow-400/50"
+                  : "text-yellow-100 hover:bg-yellow-900"
               )}
               onClick={() => setIsMenuOpen(false)}
             >
@@ -150,14 +152,14 @@ export default function AdminNavbar({ isAdmin = false }) {
       {/* Mobile menu toggle button */}
       <Button
         onClick={toggleMenu}
-        className="fixed top-4 left-4 z-50 md:hidden bg-gray-800 text-white hover:bg-gray-700"
+        className="fixed top-4 left-4 z-50 md:hidden bg-yellow-400 text-black hover:bg-yellow-300"
         size="icon"
       >
         <Menu className="h-5 w-5" />
       </Button>
 
       {/* Desktop sidebar - always visible */}
-      <div className="hidden md:block w-64 h-screen fixed left-0 top-0 bg-gray-900 flex-col overflow-hidden">
+      <div className="hidden md:block w-64 h-screen fixed left-0 top-0 bg-black flex-col overflow-hidden">
         <TabContent />
       </div>
 
@@ -177,7 +179,7 @@ export default function AdminNavbar({ isAdmin = false }) {
       <AnimatePresence>
         {isMenuOpen && (
           <motion.div
-            className="fixed inset-y-0 left-0 z-50 w-64 md:hidden bg-gray-900"
+            className="fixed inset-y-0 left-0 z-50 w-64 md:hidden bg-black"
             variants={mobileMenuVariants}
             initial="closed"
             animate="open"
@@ -190,7 +192,7 @@ export default function AdminNavbar({ isAdmin = false }) {
                   onClick={toggleMenu}
                   size="icon"
                   variant="ghost"
-                  className="text-gray-300 hover:text-white"
+                  className="text-yellow-400 hover:text-yellow-300"
                 >
                   <X className="h-5 w-5" />
                 </Button>

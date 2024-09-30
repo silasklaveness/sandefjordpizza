@@ -15,19 +15,20 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { motion } from "framer-motion";
 
 export default function MenuItem(menuItem) {
   const { image, name, description, basePrice, sizes, extraIngredientsPrices } =
     menuItem;
   const [selectedSize, setSelectedSize] = useState(sizes[0] || null);
   const [selectedExtras, setSelectedExtras] = useState([]);
-  const [showPopup, setShowPopup] = useState(false); // Initially false
-  const [quantity, setQuantity] = useState(1); // Default quantity is 1
+  const [showPopup, setShowPopup] = useState(false);
+  const [quantity, setQuantity] = useState(1);
   const { addToCart } = useContext(CartContext);
 
   function handleAddToCartButtonClick() {
     addToCart({ ...menuItem, quantity, selectedSize, selectedExtras });
-    setShowPopup(false); // Close popup after adding to cart
+    setShowPopup(false);
     toast.success("Added to cart!");
   }
 
@@ -54,7 +55,10 @@ export default function MenuItem(menuItem) {
 
   return (
     <>
-      <div className="bg-white shadow-md rounded-lg overflow-hidden">
+      <motion.div
+        className="bg-gradient-to-br from-yellow-400 to-orange-500 shadow-lg rounded-lg overflow-hidden transform transition-all duration-300 hover:scale-105"
+        whileHover={{ y: -5 }}
+      >
         <div className="relative">
           <Image
             src={image}
@@ -63,24 +67,28 @@ export default function MenuItem(menuItem) {
             height={300}
             className="w-full h-48 object-cover"
           />
-          <div className="absolute bottom-2 right-2 bg-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-lg font-bold">
+          <motion.div
+            className="absolute bottom-2 right-2 bg-red-600 text-white rounded-full w-16 h-16 flex items-center justify-center text-lg font-bold"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
             {basePrice},-
-          </div>
+          </motion.div>
         </div>
         <div className="p-4">
           <h2 className="text-xl font-bold mb-2 uppercase">{name}</h2>
-          <p className="text-gray-600 mb-4 text-sm">{description}</p>
+          <p className="text-gray-700 mb-4 text-sm">{description}</p>
           <div className="flex justify-between items-center">
             <span className="text-lg font-bold">FRA {basePrice}kr</span>
             <Button
               onClick={() => setShowPopup(true)}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-blue-600 text-white hover:bg-blue-700 transition-colors duration-300"
             >
               Legg til
             </Button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <Dialog open={showPopup} onOpenChange={(open) => setShowPopup(open)}>
         <DialogContent className="sm:max-w-[425px] bg-white dark:bg-gray-800">
@@ -164,30 +172,30 @@ export default function MenuItem(menuItem) {
                 </div>
               )}
 
-              {/* Quantity Selector */}
               <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                 <h3 className="font-semibold mb-3 text-gray-800 dark:text-gray-200">
                   Quantity
                 </h3>
                 <div className="flex items-center">
-                  {/* Minus button */}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                     className="w-8 h-8 rounded-full border flex items-center justify-center"
                   >
                     <span className="text-xl">−</span>
-                  </button>
+                  </motion.button>
 
-                  {/* Quantity Display */}
                   <span className="mx-4">{quantity}</span>
 
-                  {/* Plus button */}
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setQuantity((q) => q + 1)}
                     className="w-8 h-8 rounded-full bg-red-500 text-white flex items-center justify-center"
                   >
                     <span className="text-xl">+</span>
-                  </button>
+                  </motion.button>
                 </div>
               </div>
             </div>
@@ -202,7 +210,7 @@ export default function MenuItem(menuItem) {
             </Button>
             <Button
               onClick={handleAddToCartButtonClick}
-              className="bg-blue-600 text-white hover:bg-blue-700"
+              className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
             >
               Add to cart {selectedPrice * quantity} KR
             </Button>

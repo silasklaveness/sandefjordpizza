@@ -1,9 +1,9 @@
 import { User } from "@/app/models/User";
+import { UserInfo } from "@/app/models/UserInfo";
 import mongoose from "mongoose";
-import { isAdmin } from "@/app/utils/authOptions"; // Make sure to use the correct path
+import { isAdmin } from "@/app/utils/authOptions";
 
 export async function GET(req) {
-  // Check if the current user is an admin
   const isAdminUser = await isAdmin();
 
   if (!isAdminUser) {
@@ -11,15 +11,23 @@ export async function GET(req) {
   }
 
   try {
-    // Connect to the database if not connected already
     if (!mongoose.connection.readyState) {
       await mongoose.connect(process.env.MONGO_URL);
     }
 
-    // Fetch the users only if admin check passes
-    const users = await User.find();
+    const users = await User.find().lean();
+    const userInfos = await UserInfo.find().lean();
 
-    return new Response(JSON.stringify(users), {
+    const usersWithRoles = users.map((user) => {
+      const userInfo = userInfos.find((info) => info.email === user.email);
+      return {
+        ...user,
+        admin: userInfo?.admin || false,
+        employee: userInfo?.employee || false,
+      };
+    });
+
+    return new Response(JSON.stringify(usersWithRoles), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

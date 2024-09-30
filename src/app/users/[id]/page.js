@@ -1,20 +1,22 @@
 "use client";
+
 import UserForm from "@/components/layout/UserForm";
 import UserTabs from "@/components/layout/UserTabs";
 import { UseProfile } from "@/components/UseProfile";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+
 export default function EditUserPage() {
   const { loading, data } = UseProfile();
   const [user, setUser] = useState(null);
   const { id } = useParams();
+  const router = useRouter();
 
   useEffect(() => {
     fetch("/api/profile?_id=" + id).then((res) => {
       res.json().then((user) => {
         setUser(user);
-        console.log(user);
       });
     });
   }, [id]);
@@ -38,6 +40,8 @@ export default function EditUserPage() {
       success: "User saved!",
       error: "Error!",
     });
+
+    router.push("/users");
   }
 
   if (loading) {
@@ -47,11 +51,23 @@ export default function EditUserPage() {
   if (!data.admin) {
     return <div>You are not an admin</div>;
   }
+
   return (
     <section className="mt-8 mx-auto max-w-2xl">
-      <UserTabs isAdmin={true} />
+      <UserTabs isAdmin={data.admin} />
       <div className="mt-8">
-        <UserForm user={user} onSave={handleSaveButtonClick} />
+        <h1 className="text-3xl font-bold mb-8 text-yellow-400">Edit User</h1>
+        {user ? (
+          <UserForm user={user} onSave={handleSaveButtonClick} />
+        ) : (
+          <div>Loading user data...</div>
+        )}
+        <button
+          onClick={() => router.push("/users")}
+          className="mt-4 px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+        >
+          Back to User List
+        </button>
       </div>
     </section>
   );
