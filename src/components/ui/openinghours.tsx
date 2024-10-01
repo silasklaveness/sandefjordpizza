@@ -19,7 +19,7 @@ interface RestaurantData {
   }>;
 }
 
-const daysOfWeek = [
+const daysOfWeek: string[] = [
   "Mandag",
   "Tirsdag",
   "Onsdag",
@@ -43,7 +43,6 @@ export default function OpeningHours() {
   const [currentWeekStart, setCurrentWeekStart] = useState(
     getWeekStart(new Date())
   );
-  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const fetchRestaurantData = async () => {
@@ -64,11 +63,6 @@ export default function OpeningHours() {
     };
 
     fetchRestaurantData();
-
-    // Update current time every minute
-    const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-
-    return () => clearInterval(timer);
   }, [currentWeekStart]);
 
   const navigateWeek = (direction: number) => {
@@ -79,116 +73,130 @@ export default function OpeningHours() {
     });
   };
 
-  const isCurrentlyOpen = (date: Date, times: OpeningTime): boolean => {
-    const now = currentTime;
-    if (date.toDateString() !== now.toDateString()) return false;
-
-    const [openHour, openMinute] = times.open.split(":").map(Number);
-    const [closeHour, closeMinute] = times.close.split(":").map(Number);
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
-
-    if (closeHour < openHour) {
-      // Handles cases where closing time is after midnight
-      return (
-        currentHour > openHour ||
-        (currentHour === openHour && currentMinute >= openMinute) ||
-        currentHour < closeHour ||
-        (currentHour === closeHour && currentMinute < closeMinute)
-      );
-    } else {
-      return (
-        (currentHour > openHour ||
-          (currentHour === openHour && currentMinute >= openMinute)) &&
-        (currentHour < closeHour ||
-          (currentHour === closeHour && currentMinute < closeMinute))
-      );
-    }
-  };
-
   if (isLoading) {
-    return <div className="text-center">Laster åpningstider...</div>;
+    return <div className="text-center p-4">Laster åpningstider...</div>;
   }
 
   if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
+    return <div className="text-center text-red-500 p-4">{error}</div>;
   }
 
   if (!restaurantData) {
-    return <div className="text-center">Ingen åpningstider tilgjengelig</div>;
+    return (
+      <div className="text-center p-4">Ingen åpningstider tilgjengelig</div>
+    );
   }
 
   const weekDates = getWeekDates(currentWeekStart);
   const today = new Date();
-  const todayString = formatDate(today);
-  const todayTimes =
-    restaurantData.openingTimes[todayString] || defaultOpeningHours;
-  const isOpen = isCurrentlyOpen(today, todayTimes);
+
+  const groupedOpeningHours = groupOpeningHours(
+    weekDates,
+    restaurantData,
+    today
+  );
 
   return (
-    <div className="bg-gray-900 p-6 rounded-lg shadow-md text-white">
-      <div
-        className={`text-center mb-4 p-2 rounded-md ${
-          isOpen ? "bg-green-600" : "bg-red-600"
-        }`}
-      >
-        <span className="font-bold">{isOpen ? "Åpent nå" : "Stengt nå"}</span>
-      </div>
-      <h3 className="text-2xl font-semibold mb-4 flex items-center justify-between text-yellow-400">
-        <Clock className="mr-2" />
-        Åpningstider
+    <div className="bg-gray-900 p-4 rounded-lg shadow-md text-white">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold flex items-center text-yellow-400">
+          <Clock className="mr-2" />
+          Åpningstider
+        </h3>
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"
             size="icon"
             onClick={() => navigateWeek(-1)}
+            className="h-8 w-8"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium">
-            Uke {getWeekNumber(currentWeekStart)} -{" "}
-            {currentWeekStart.getFullYear()}
+          <span className="text-sm font-medium whitespace-nowrap">
+            Uke {getWeekNumber(currentWeekStart)}
           </span>
-          <Button variant="outline" size="icon" onClick={() => navigateWeek(1)}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => navigateWeek(1)}
+            className="h-8 w-8"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-      </h3>
-      <ul className="space-y-2">
-        {daysOfWeek.map((day, index) => {
-          const date = weekDates[index];
-          const dateString = formatDate(date);
-          const times =
-            restaurantData.openingTimes[dateString] || defaultOpeningHours;
-          const specialOccasion = restaurantData.specialOccasions.find(
-            (so) => so.date === dateString
-          );
-          const isToday = date.toDateString() === today.toDateString();
-          const isOpenNow = isToday && isCurrentlyOpen(date, times);
-
-          return (
-            <li
-              key={day}
-              className={`flex justify-between p-2 rounded ${
-                isToday ? (isOpenNow ? "bg-green-600" : "bg-red-600") : ""
-              }`}
-            >
-              <span>
-                {day} ({formatDateShort(date)}):
-              </span>
-              <span>
-                {specialOccasion
-                  ? specialOccasion.isClosed
-                    ? "Stengt"
-                    : `${specialOccasion.open} - ${specialOccasion.close}`
-                  : `${times.open} - ${times.close}`}
-              </span>
-            </li>
-          );
-        })}
+      </div>
+      <ul className="space-y-1">
+        {groupedOpeningHours.map((group, index) => (
+          <li key={index} className="flex justify-between py-1">
+            <span>
+              {group.days}
+              {group.isToday && (
+                <span className="ml-1 text-yellow-400">(I dag)</span>
+              )}
+            </span>
+            <span>{group.hours}</span>
+          </li>
+        ))}
       </ul>
     </div>
   );
+}
+
+function groupOpeningHours(
+  weekDates: Date[],
+  restaurantData: RestaurantData,
+  today: Date
+) {
+  let currentGroup: { days: string[]; hours: string; isToday: boolean } = {
+    days: [],
+    hours: "",
+    isToday: false,
+  };
+  const groups: Array<{ days: string; hours: string; isToday: boolean }> = [];
+
+  weekDates.forEach((date, index) => {
+    const dateString = formatDate(date);
+    const times =
+      restaurantData.openingTimes[dateString] || defaultOpeningHours;
+    const specialOccasion = restaurantData.specialOccasions.find(
+      (so) => so.date === dateString
+    );
+    const isToday = date.toDateString() === today.toDateString();
+    const hours = specialOccasion
+      ? specialOccasion.isClosed
+        ? "Stengt"
+        : `${specialOccasion.open} - ${specialOccasion.close}`
+      : `${times.open} - ${times.close}`;
+
+    if (currentGroup.hours === hours && !isToday) {
+      currentGroup.days.push(daysOfWeek[index]);
+    } else {
+      if (currentGroup.days.length > 0) {
+        groups.push({
+          days: formatDayRange(currentGroup.days),
+          hours: currentGroup.hours,
+          isToday: currentGroup.isToday,
+        });
+      }
+      currentGroup = { days: [daysOfWeek[index]], hours, isToday };
+    }
+  });
+
+  if (currentGroup.days.length > 0) {
+    groups.push({
+      days: formatDayRange(currentGroup.days),
+      hours: currentGroup.hours,
+      isToday: currentGroup.isToday,
+    });
+  }
+
+  return groups;
+}
+
+function formatDayRange(days: string[]): string {
+  if (days.length === 1) return days[0];
+  if (days.length === 7) return "Alle dager";
+  return `${days[0]}-${days[days.length - 1]}`;
 }
 
 function getWeekStart(date: Date): Date {
@@ -200,12 +208,6 @@ function getWeekStart(date: Date): Date {
 
 function formatDate(date: Date): string {
   return date.toISOString().split("T")[0];
-}
-
-function formatDateShort(date: Date): string {
-  return `${date.getDate().toString().padStart(2, "0")}.${(date.getMonth() + 1)
-    .toString()
-    .padStart(2, "0")}`;
 }
 
 function getWeekDates(weekStart: Date): Date[] {

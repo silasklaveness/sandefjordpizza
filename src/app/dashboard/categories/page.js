@@ -119,9 +119,6 @@ export default function CategoriesPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow flex flex-col md:flex-row">
-        <div className="md:w-64 md:flex-shrink-0">
-          <UserTabs isAdmin={true} />
-        </div>
         <main className="flex-grow p-4 md:p-6 lg:p-8 overflow-x-hidden">
           <div className="max-w-4xl mx-auto space-y-6">
             <Card>

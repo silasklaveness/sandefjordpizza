@@ -15,6 +15,7 @@ import { ChevronDown, Phone, MapPin, Clock } from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import OpeningHours from "@/components/ui/openinghours";
 import { Button } from "@/components/ui/button";
+import { Mail, Pizza, Utensils, Beer } from "lucide-react";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -178,8 +179,8 @@ export default function Home() {
           </div>
           <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
@@ -187,8 +188,8 @@ export default function Home() {
             </motion.div>
             <motion.div
               className="bg-gray-900 p-6 rounded-lg shadow-md text-white"
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
               transition={{ duration: 0.8 }}
               viewport={{ once: true }}
             >
@@ -208,49 +209,211 @@ export default function Home() {
           </div>
         </div>
 
-        <div id="about" className="py-16 px-4 md:px-8 border-t border-gray-800">
-          <div className="text-center">
-            <SectionHeaders subHeader={"Vår historie"} mainHeader={"Om oss"} />
+        <div
+          id="about"
+          className="py-24 px-4 md:px-8 bg-gradient-to-b from-black to-gray-900"
+        >
+          <div className="max-w-6xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <SectionHeaders
+                subHeader={"Vår historie"}
+                mainHeader={"Om oss"}
+              />
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+                className="space-y-6 text-gray-300"
+              >
+                <h3 className="text-3xl font-bold text-yellow-400">
+                  Sandefjord Pizza
+                </h3>
+                <p className="text-xl italic">Bakt med kjærlighet</p>
+                <p className="text-lg leading-relaxed">
+                  Vi serverer pizza, kebab, hamburger og salat. Sett deg ned i
+                  vår koselige, hjemmekoselige pizza-hytte og nyt en av våre
+                  fantastiske pizzaer. Hvis du har lyst på noe annet en pizza så
+                  har vi også kebab, hamburger, kylling og pølse-retter. Vi har
+                  skjenkebevilgning og servering med alle rettigheter.
+                </p>
+                <div className="flex justify-center md:justify-start space-x-8 pt-4">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="flex flex-col items-center"
+                  >
+                    <Pizza className="w-12 h-12 text-yellow-400" />
+                    <span className="mt-2 text-sm">Pizza</span>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="flex flex-col items-center"
+                  >
+                    <Utensils className="w-12 h-12 text-yellow-400" />
+                    <span className="mt-2 text-sm">Diverse retter</span>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    className="flex flex-col items-center"
+                  >
+                    <Beer className="w-12 h-12 text-yellow-400" />
+                    <span className="mt-2 text-sm">Skjenkebevilgning</span>
+                  </motion.div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="relative h-96 rounded-lg overflow-hidden shadow-2xl"
+              >
+                <Image
+                  src="/restaurantinside.png"
+                  alt="Sandefjord Pizza Restaurant"
+                  layout="fill"
+                  objectFit="cover"
+                  className="rounded-lg"
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                  <p className="text-white text-3xl font-bold text-center px-4">
+                    Velkommen til vår pizza-hytte!
+                  </p>
+                </div>
+              </motion.div>
+            </div>
           </div>
-          <motion.div
-            className="text-gray-300 max-w-3xl mx-auto mt-12 flex flex-col gap-8"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-          >
-            <p className="text-lg leading-relaxed">
-              Vi ønsker alle nye og eksisterende kunder velkommen til en herlig
-              smaksopplevelse. Sandefjord Pizza har helt siden 90-tallet blitt
-              omtalt som «byens beste pizza». Vi benytter ferske lokale råvarer
-              og baker våre ferske pizzabunner hver dag.
-            </p>
-            <p className="text-lg leading-relaxed">
-              Vi ønsker deg velkommen inn i vår restaurant i sentrum av
-              Sandefjord for en smaksopplevelse du sent vil glemme!
-            </p>
-          </motion.div>
         </div>
 
         <section
           id="contact"
-          className="text-center py-24 px-4 md:px-8 border-t border-gray-800"
+          className="py-24 px-4 md:px-8 bg-gradient-to-b from-gray-900 to-black"
         >
-          <div className="text-center">
-            <SectionHeaders
-              subHeader={"Ikke nøl"}
-              mainHeader={"Bare kontakt oss"}
-            />
+          <div className="max-w-4xl mx-auto">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <SectionHeaders
+                subHeader={"Ikke nøl"}
+                mainHeader={"Bare kontakt oss"}
+              />
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <motion.div
+                className="flex flex-col items-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                <div className="bg-yellow-400 rounded-full p-4 mb-4">
+                  <Phone className="w-8 h-8 text-black" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Ring oss
+                </h3>
+                <Button
+                  asChild
+                  variant="link"
+                  className="text-2xl font-bold text-yellow-400 hover:text-yellow-500 transition-colors duration-300"
+                >
+                  <motion.a
+                    href="tel:+4745786703"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    +47 45786703
+                  </motion.a>
+                </Button>
+              </motion.div>
+
+              <motion.div
+                className="flex flex-col items-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <div className="bg-yellow-400 rounded-full p-4 mb-4">
+                  <Mail className="w-8 h-8 text-black" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  E-post oss
+                </h3>
+                <Button
+                  asChild
+                  variant="link"
+                  className="text-2xl font-bold text-yellow-400 hover:text-yellow-500 transition-colors duration-300"
+                >
+                  <motion.a
+                    href="mailto:info@sandefjordpizza.no"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    info@sandefjordpizza.no
+                  </motion.a>
+                </Button>
+              </motion.div>
+
+              <motion.div
+                className="flex flex-col items-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <div className="bg-yellow-400 rounded-full p-4 mb-4">
+                  <MapPin className="w-8 h-8 text-black" />
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2">
+                  Besøk oss
+                </h3>
+                <p className="text-gray-300 text-center">
+                  Peter Castbergs gate 9
+                  <br />
+                  3210 Sandefjord
+                </p>
+              </motion.div>
+            </div>
+
+            <motion.div
+              className="mt-16 text-center"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.8 }}
+              viewport={{ once: true }}
+            >
+              <Button
+                asChild
+                className="bg-gradient-to-r from-orange-500 to-red-600 text-white hover:from-orange-600 hover:to-red-700 transition-all duration-300 px-8 py-3 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl"
+              >
+                <motion.a
+                  href="https://www.google.no/maps/place/Sandefjord+Pizza,+Grill+og+Kaffebar/@59.1298162,10.2024753,14z/data=!4m6!3m5!1s0x4646c096e573f5bd:0x41aac72d93c040d2!8m2!3d59.1352553!4d10.2219246!16s%2Fg%2F1hc243hcp?hl=no&entry=ttu&g_ep=EgoyMDI0MDkyNS4wIKXMDSoASAFQAw%3D%3D"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  Vis på kart
+                </motion.a>
+              </Button>
+            </motion.div>
           </div>
-          <motion.a
-            className="text-4xl md:text-6xl font-bold mt-12 text-yellow-400 hover:text-yellow-500 transition-colors duration-300 inline-flex items-center gap-4"
-            href="tel:+4745786703"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Phone className="w-12 h-12" />
-            +47 45786703
-          </motion.a>
         </section>
         <Footer />
       </motion.div>

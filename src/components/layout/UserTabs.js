@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
@@ -41,8 +41,19 @@ const iconMap = {
   Restaurant: LayoutGrid,
 };
 
+const tabs = [
+  { name: "Profile", href: "/dashboard/profile", adminOnly: false },
+  { name: "Categories", href: "/dashboard/categories", adminOnly: true },
+  { name: "Menu Items", href: "/dashboard/menu-items", adminOnly: true },
+  { name: "Users", href: "/dashboard/users", adminOnly: true },
+  { name: "Orders", href: "/dashboard/orders", adminOnly: false },
+  { name: "Oversikt", href: "/dashboard/oversikt", adminOnly: true },
+  { name: "Restaurant", href: "/dashboard/restaurant", adminOnly: true },
+];
+
 export default function AdminNavbar({ isAdmin = false }) {
   const path = usePathname();
+  const router = useRouter();
   const { data: session, status } = useSession();
   const [user, setUser] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -58,17 +69,15 @@ export default function AdminNavbar({ isAdmin = false }) {
     }
   }, [status, user]);
 
-  const tabs = [
-    { name: "Profile", href: "/profile", adminOnly: false },
-    { name: "Categories", href: "/categories", adminOnly: true },
-    { name: "Menu Items", href: "/menu-items", adminOnly: true },
-    { name: "Users", href: "/users", adminOnly: true },
-    { name: "Orders", href: "/orders", adminOnly: false },
-    { name: "Oversikt", href: "/oversikt", adminOnly: true },
-    { name: "Restaurant", href: "/restaurant", adminOnly: true },
-  ];
+  const toggleMenu = useCallback(() => setIsMenuOpen((prev) => !prev), []);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const handleNavigation = useCallback(
+    (href) => {
+      router.push(href);
+      setIsMenuOpen(false);
+    },
+    [router]
+  );
 
   // If the user is not authenticated, don't render anything
   if (status !== "authenticated") {
@@ -79,15 +88,14 @@ export default function AdminNavbar({ isAdmin = false }) {
     <>
       <div className="p-4 border-b border-yellow-400">
         <div className="flex items-center justify-between mb-2 mt-2 mr-2">
-          <Link href="/">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-yellow-400 hover:text-yellow-300"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-yellow-400 hover:text-yellow-300"
+            onClick={() => handleNavigation("/")}
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
           <div className="flex items-center space-x-2">
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-600 flex items-center justify-center overflow-hidden">
               {user?.image ? (
@@ -119,16 +127,16 @@ export default function AdminNavbar({ isAdmin = false }) {
           const Icon = iconMap[tab.name];
 
           return (
-            <Link
+            <Button
               key={tab.name}
-              href={tab.href}
+              variant="ghost"
               className={cn(
-                "flex items-center space-x-3 py-2 px-3 rounded-md transition-all duration-200 ease-in-out mb-2",
+                "w-full flex items-center justify-start space-x-3 py-2 px-3 rounded-md transition-all duration-200 ease-in-out mb-2",
                 isActive
                   ? "bg-yellow-400 text-black shadow-lg shadow-yellow-400/50"
                   : "text-yellow-100 hover:bg-yellow-900"
               )}
-              onClick={() => setIsMenuOpen(false)}
+              onClick={() => handleNavigation(tab.href)}
             >
               <motion.div
                 variants={tabVariants}
@@ -140,7 +148,7 @@ export default function AdminNavbar({ isAdmin = false }) {
                 <Icon className="w-5 h-5" />
                 <span className="text-sm font-medium">{tab.name}</span>
               </motion.div>
-            </Link>
+            </Button>
           );
         })}
       </nav>

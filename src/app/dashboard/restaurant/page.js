@@ -275,7 +275,6 @@ export default function RestaurantPage() {
 
   return (
     <section className="max-w-4xl mx-auto p-4">
-      <UserTabs isAdmin={isAdmin} />
       <Card className="mt-8">
         <CardHeader>
           <CardTitle>

@@ -121,7 +121,7 @@ export default function Footer() {
                   href="/account/register"
                   className="hover:text-yellow-400 transition-colors"
                 >
-                  Register
+                  Registrer
                 </Link>
               </li>
               <li>
@@ -151,15 +151,15 @@ export default function Footer() {
             <ul className="space-y-2">
               <li className="flex items-center">
                 <MapPin className="h-5 w-5 mr-2 text-yellow-400" />
-                <span>123 Pizza Street, Sandefjord, Norway</span>
+                <span>Peter Castbergs gate 9, 3210 Sandefjord</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-5 w-5 mr-2 text-yellow-400" />
                 <a
-                  href="tel:+4712345678"
+                  href="tel:+4733463050"
                   className="hover:text-yellow-400 transition-colors"
                 >
-                  +47 123 45 678
+                  +47 334 63 050
                 </a>
               </li>
               <li className="flex items-center">
@@ -180,25 +180,6 @@ export default function Footer() {
         </div>
 
         {/* Newsletter Subscription */}
-        <div className="mt-12 border-t border-gray-800 pt-8">
-          <h3 className="text-yellow-400 text-lg font-semibold mb-4">
-            Subscribe to Our Newsletter
-          </h3>
-          <form className="flex flex-col sm:flex-row gap-4">
-            <input
-              type="email"
-              placeholder="Enter your email"
-              className="flex-grow px-4 py-2 bg-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-400"
-              required
-            />
-            <button
-              type="submit"
-              className="px-6 py-2 bg-yellow-400 text-black rounded-md hover:bg-yellow-500 transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-black"
-            >
-              Subscribe
-            </button>
-          </form>
-        </div>
 
         {/* Copyright and Additional Links */}
         <div className="mt-12 border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">

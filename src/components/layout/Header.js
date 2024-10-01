@@ -107,13 +107,13 @@ export default function LuxuriousHeader() {
   const isMenuPage = pathname === "/menu";
 
   const hiddenPages = [
-    "/profile",
-    "/categories",
-    "/menu-items",
-    "/users",
-    "/orders",
-    "/oversikt",
-    "/restaurant",
+    "/dashboard/profile",
+    "/dashboard/categories",
+    "/dashboard/menu-items",
+    "/dashboard/users",
+    "/dashboard/orders",
+    "/dashboard/oversikt",
+    "/dashboard/restaurant",
   ];
   const shouldHideHeader = hiddenPages.some((page) =>
     pathname.startsWith(page)
@@ -187,7 +187,7 @@ export default function LuxuriousHeader() {
             {status === "authenticated" ? (
               <div className="flex items-center gap-2">
                 <Link
-                  href="/profile"
+                  href="/dashboard/profile"
                   className="text-gray-300 hover:text-yellow-400 transition-colors"
                 >
                   <User size={24} />

@@ -1,55 +1,85 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { UseProfile } from "@/components/UseProfile";
+import EditableImage from "@/components/layout/EditableImage";
 import UserTabs from "@/components/layout/UserTabs";
-import MenuItemForm from "@/components/layout/MenuItemForm";
 import Link from "next/link";
+import { redirect, useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import MenuItemForm from "@/components/layout/MenuItemForm";
+import DeleteButton from "@/components/DeleteButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, PlusCircle } from "lucide-react";
+import { ArrowLeft, Edit } from "lucide-react";
 
-export default function NewMenuItemPage() {
-  console.log("NewMenuItemPage is rendering...");
-
-  const router = useRouter();
+export default function EditMenuItemPage() {
+  const { id } = useParams();
+  const [menuItem, setMenuItem] = useState(null);
   const [redirectToItems, setRedirectToItems] = useState(false);
   const { loading, data } = UseProfile();
 
   useEffect(() => {
-    console.log("loading:", loading);
-    console.log("data:", data);
-  }, [loading, data]);
+    fetch("/api/menu-items").then((res) => {
+      res.json().then((items) => {
+        const item = items.find((i) => i._id === id);
+        setMenuItem(item);
+        console.log(item);
+      });
+    });
+  }, [id]);
 
   async function handleFormSubmit(ev, data) {
     ev.preventDefault();
-    console.log("Form submitted with data:", data);
-
+    data = {
+      ...data,
+      _id: id,
+    };
     const savingPromise = new Promise(async (resolve, reject) => {
       const response = await fetch("/api/menu-items", {
-        method: "POST",
+        method: "PUT",
         body: JSON.stringify(data),
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       });
+
       if (response.ok) resolve();
       else reject();
     });
 
     await toast.promise(savingPromise, {
-      loading: "Saving this tasty item",
-      success: "Saved",
-      error: "Error",
+      loading: "Saving...",
+      success: "Item saved!",
+      error: "Error!",
     });
 
     setRedirectToItems(true);
-    router.push("/menu-items"); // Redirect manually
+  }
+
+  async function handleDeleteClick() {
+    const promise = new Promise(async (resolve, reject) => {
+      const res = await fetch("/api/menu-items?_id=" + id, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        resolve();
+      } else {
+        reject();
+      }
+    });
+
+    await toast.promise(promise, {
+      loading: "Deleting...",
+      success: "Item deleted!",
+      error: "Error!",
+    });
+
+    setRedirectToItems(true);
   }
 
   if (redirectToItems) {
-    console.log("Redirecting to /menu-items...");
-    return null; // Redirection is handled by router.push
+    return redirect("/dashboard/menu-items");
   }
 
   if (loading) {
@@ -60,7 +90,7 @@ export default function NewMenuItemPage() {
     );
   }
 
-  if (!data || !data.admin) {
+  if (!data.admin) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-2xl font-bold text-red-500">Not an admin.</div>
@@ -70,24 +100,31 @@ export default function NewMenuItemPage() {
 
   return (
     <section className="max-w-4xl mx-auto p-4">
-      <UserTabs isAdmin={true} />
       <Card className="mt-8">
         <CardHeader>
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <PlusCircle className="w-6 h-6" />
-            Create New Menu Item
+            <Edit className="w-6 h-6" />
+            Edit Menu Item
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="mb-4">
-            <Link href="/menu-items">
+            <Link href="/dashboard/menu-items">
               <Button variant="outline" className="flex items-center gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Show all menu items
               </Button>
             </Link>
           </div>
-          <MenuItemForm menuItem={null} onSubmit={handleFormSubmit} />
+          {menuItem && (
+            <MenuItemForm menuItem={menuItem} onSubmit={handleFormSubmit} />
+          )}
+          <div className="mt-4 flex justify-end">
+            <DeleteButton
+              label="Delete this menu item"
+              onDelete={handleDeleteClick}
+            />
+          </div>
         </CardContent>
       </Card>
     </section>

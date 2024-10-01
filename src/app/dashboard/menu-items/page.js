@@ -85,15 +85,13 @@ export default function MenuItemsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow flex flex-col md:flex-row">
-        <div className="md:w-64 md:flex-shrink-0">
-          <UserTabs isAdmin={data.admin} />
-        </div>
+        <div className="md:w-64 md:flex-shrink-0"></div>
         <main className="flex-grow p-4 md:p-6 lg:p-8 overflow-x-hidden">
           <div className="max-w-6xl mx-auto">
             <h1 className="text-primary text-3xl font-bold mb-4">Menu Items</h1>
             <Card>
               <CardContent className="p-4">
-                <Link href="/menu-items/new">
+                <Link href="/dashboard/menu-items/new">
                   <Button className="w-full sm:w-auto">
                     <PlusCircle className="w-4 h-4 mr-2" />
                     Create new menu item
@@ -166,7 +164,7 @@ export default function MenuItemsPage() {
                       exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Link href={`/menu-items/edit/${item._id}`}>
+                      <Link href={`/dashboard/menu-items/edit/${item._id}`}>
                         <Card className="hover:shadow-lg transition-shadow duration-200">
                           <CardContent className="p-4">
                             <div className="relative aspect-square mb-2">

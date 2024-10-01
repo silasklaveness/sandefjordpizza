@@ -162,9 +162,7 @@ export default function OrdersPage() {
       <div className="flex-grow flex flex-col md:flex-row">
         <div
           className={`md:w-64 md:flex-shrink-0 ${isFullScreen ? "hidden" : ""}`}
-        >
-          <UserTabs isAdmin={profile.admin} />
-        </div>
+        ></div>
         <main
           className={`flex-grow p-4 md:p-6 lg:p-8 overflow-x-hidden ${
             isFullScreen ? "w-full" : ""

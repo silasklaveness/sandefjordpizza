@@ -142,9 +142,7 @@ export default function AnalyticsPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex-grow flex flex-col md:flex-row">
-        <div className="md:w-64 md:flex-shrink-0">
-          <UserTabs isAdmin={profile.admin} />
-        </div>
+        <div className="md:w-64 md:flex-shrink-0"></div>
         <main className="flex-grow p-4 md:p-6 lg:p-8 overflow-x-hidden">
           <div className="max-w-6xl mx-auto">
             <DateSelection

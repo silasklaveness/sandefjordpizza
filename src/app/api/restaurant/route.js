@@ -11,23 +11,6 @@ export async function GET(req) {
 
     const session = await getServerSession(authOptions);
 
-    if (!session) {
-      return new Response(JSON.stringify({ message: "Unauthorized" }), {
-        status: 401,
-      });
-    }
-
-    const admin = await isAdmin(session);
-
-    if (!admin) {
-      return new Response(
-        JSON.stringify({ message: "Forbidden: Admins only" }),
-        {
-          status: 403,
-        }
-      );
-    }
-
     const restaurant = await Restaurant.findOne();
 
     if (!restaurant) {
