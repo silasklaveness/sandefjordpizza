@@ -257,7 +257,7 @@ export default function LuxuriousHeader() {
                 {status === "authenticated" ? (
                   <>
                     <Link
-                      href="/profile"
+                      href="/dashboard/profile"
                       onClick={closeMenu}
                       className="text-2xl font-semibold text-white hover:text-yellow-400 transition-colors ml-8"
                     >
