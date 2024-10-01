@@ -11,11 +11,19 @@ import {
 } from "framer-motion";
 import Homemeny from "../components/layout/HomeMeny";
 import SectionHeaders from "@/components/layout/SectionHeaders";
-import { ChevronDown, Phone, MapPin, Clock } from "lucide-react";
+import {
+  ChevronDown,
+  Phone,
+  MapPin,
+  Clock,
+  Mail,
+  Pizza,
+  Utensils,
+  Beer,
+} from "lucide-react";
 import Footer from "@/components/layout/Footer";
 import OpeningHours from "@/components/ui/openinghours";
 import { Button } from "@/components/ui/button";
-import { Mail, Pizza, Utensils, Beer } from "lucide-react";
 
 export default function Home() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -122,11 +130,14 @@ export default function Home() {
                 transition={{ duration: 0.8, delay: 0.8 }}
                 className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4"
               >
-                <Link
-                  href="/menu"
-                  className="bg-yellow-400 text-black px-8 py-4 rounded-full text-xl font-semibold hover:bg-yellow-500 transition-all duration-300 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1"
-                >
-                  Se vår meny / Bestill
+                <Link href="/menu" passHref>
+                  <motion.a
+                    className="bg-yellow-400 text-black px-8 py-4 rounded-full text-xl font-semibold hover:bg-yellow-500 transition-all duration-300 inline-block shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Se vår meny / Bestill
+                  </motion.a>
                 </Link>
                 <Button
                   className={`px-4 py-2 rounded-full text-white font-semibold ${
@@ -229,8 +240,8 @@ export default function Home() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
               <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.2 }}
                 viewport={{ once: true }}
                 className="space-y-6 text-gray-300"
@@ -272,8 +283,8 @@ export default function Home() {
               </motion.div>
 
               <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
                 transition={{ duration: 0.8, delay: 0.4 }}
                 viewport={{ once: true }}
                 className="relative h-96 rounded-lg overflow-hidden shadow-2xl"
