@@ -5,6 +5,7 @@ import Link from "next/link";
 import UserTabs from "@/components/layout/UserTabs";
 import { User } from "lucide-react";
 import { UseProfile } from "@/components/UseProfile";
+import LogoLoader from "@/components/ui/logoloader";
 
 const roleColors = {
   Admin: "bg-red-500",
@@ -52,7 +53,13 @@ export default function UsersPage() {
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
+      </div>
+    );
   }
 
   if (!data.admin) {

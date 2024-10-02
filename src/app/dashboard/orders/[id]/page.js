@@ -21,6 +21,7 @@ import {
   Truck,
   Calendar,
 } from "lucide-react";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function OrderPage() {
   const { clearCart } = useContext(CartContext);
@@ -40,7 +41,6 @@ export default function OrderPage() {
       fetch("/api/orders?_id=" + id)
         .then((res) => res.json())
         .then((orderData) => {
-          console.log("Fetched order data:", orderData);
           setOrder(orderData[0]); // Set the first order from the array
           setLoadingOrder(false);
         })
@@ -53,8 +53,10 @@ export default function OrderPage() {
 
   if (loadingOrder) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
       </div>
     );
   }
@@ -62,13 +64,9 @@ export default function OrderPage() {
   if (!order) {
     return (
       <div className="flex flex-col items-center justify-center h-screen">
-        <AlertCircle className="w-16 h-16 text-yellow-500 mb-4" />
         <h2 className="text-2xl font-semibold text-gray-700 mb-2">
           Order Not Found
         </h2>
-        <p className="text-gray-600">
-          We couldnt find the order youre looking for.
-        </p>
       </div>
     );
   }
@@ -116,7 +114,6 @@ export default function OrderPage() {
       className="max-w-4xl mx-auto mt-8 px-4"
     >
       <div className="text-center mb-8">
-        <SectionHeaders mainHeader="Order Confirmation" />
         <motion.div
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}

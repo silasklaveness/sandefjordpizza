@@ -11,10 +11,10 @@ export default function RootLayout({ children }) {
 
   return (
     <html lang="en" className="scroll-smooth">
-      <div>
+      <body>
         <UserTabs isAdmin={data.admin} />
         {children}
-      </div>
+      </body>
     </html>
   );
 }

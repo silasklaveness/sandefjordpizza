@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { motion, AnimatePresence } from "framer-motion";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function MenuItemsPage() {
   const [menuItems, setMenuItems] = useState([]);
@@ -58,8 +59,10 @@ export default function MenuItemsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
       </div>
     );
   }

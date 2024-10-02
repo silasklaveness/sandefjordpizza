@@ -21,6 +21,8 @@ export async function POST(req) {
 
   if (event.type === "checkout.session.completed") {
     console.log(event);
+    console.log(event?.data?.object?.total_details);
+
     const orderId = event?.data?.object?.metadata?.orderId;
     const isPaid = event?.data?.object?.payment_status === "paid";
     const email = event?.data?.object?.customer_email;
@@ -33,10 +35,11 @@ export async function POST(req) {
       await Order.updateOne({ _id: orderId }, { paid: true });
       try {
         await resend.emails.send({
-          from: "kunde@oceanedge.no",
+          from: "kundeservice@oceanedge.no",
           to: email, // Use the customer's email from the order
           subject: "Welcome!",
           react: Welcome({
+            orderId,
             firstName,
             success_url,
             amount_total,

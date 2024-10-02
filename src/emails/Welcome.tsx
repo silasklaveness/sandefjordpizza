@@ -16,9 +16,11 @@ type WelcomeProps = {
   success_url: string;
   amount_total: number;
   amount_subtotal: number;
+  orderId: string;
 };
 
 export default function Welcome({
+  orderId,
   firstName,
   success_url,
   amount_subtotal,
@@ -46,6 +48,9 @@ export default function Welcome({
           </Heading>
           <Text style={textStyle}>
             Orderen din er mottatt og blir prosessert.
+          </Text>
+          <Text style={textStyle}>
+            Din ordreId er: <strong>{orderId}</strong>
           </Text>
         </Section>
 

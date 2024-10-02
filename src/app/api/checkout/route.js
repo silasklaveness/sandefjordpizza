@@ -83,7 +83,7 @@ export async function POST(req) {
     customer_email: userEmail,
     success_url:
       process.env.NEXTAUTH_URL +
-      "orders/" +
+      "dashboard/orders/" +
       orderDoc._id.toString() +
       "?clear-cart=1",
     cancel_url: process.env.NEXTAUTH_URL + "cart?canceled=1",

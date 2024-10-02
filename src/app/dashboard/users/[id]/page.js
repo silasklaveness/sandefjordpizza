@@ -6,6 +6,7 @@ import { UseProfile } from "@/components/UseProfile";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function EditUserPage() {
   const { loading, data } = UseProfile();
@@ -45,7 +46,13 @@ export default function EditUserPage() {
   }
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
+      </div>
+    );
   }
 
   if (!data.admin) {

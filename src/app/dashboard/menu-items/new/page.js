@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, PlusCircle } from "lucide-react";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function NewMenuItemPage() {
   console.log("NewMenuItemPage is rendering...");
@@ -54,8 +55,10 @@ export default function NewMenuItemPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
       </div>
     );
   }

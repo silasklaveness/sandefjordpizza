@@ -12,6 +12,7 @@ import DeleteButton from "@/components/DeleteButton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Edit } from "lucide-react";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function EditMenuItemPage() {
   const { id } = useParams();
@@ -84,8 +85,10 @@ export default function EditMenuItemPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
       </div>
     );
   }
