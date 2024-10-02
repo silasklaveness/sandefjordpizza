@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { PlusCircle, Edit2, X, Folder, FolderPlus } from "lucide-react";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function CategoriesPage() {
   const [categoryName, setCategoryName] = useState("");
@@ -102,8 +103,10 @@ export default function CategoriesPage() {
 
   if (profileLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
       </div>
     );
   }

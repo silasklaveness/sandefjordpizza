@@ -1,12 +1,10 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import UserTabs from "@/components/layout/UserTabs";
-import EditableImage from "@/components/layout/EditableImage";
 import UserForm from "@/components/layout/UserForm";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function ProfilePage() {
   const session = useSession();
@@ -49,7 +47,13 @@ export default function ProfilePage() {
   }
 
   if (status === "loading" || !profileFetched) {
-    return "Loading...";
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
+      </div>
+    );
   }
 
   if (status === "unauthenticated") {

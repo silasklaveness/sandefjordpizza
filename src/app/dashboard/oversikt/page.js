@@ -29,6 +29,7 @@ import {
 import { ArrowUp, DollarSign, ShoppingCart, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import LogoLoader from "@/components/ui/logoloader";
 
 export default function AnalyticsPage() {
   const [orders, setOrders] = useState([]);
@@ -104,8 +105,10 @@ export default function AnalyticsPage() {
 
   if (loading || loadingOrders) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <LogoLoader size={75} color="#000000" />
+        </div>
       </div>
     );
   }

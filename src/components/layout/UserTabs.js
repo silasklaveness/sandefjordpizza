@@ -92,7 +92,7 @@ export default function AdminNavbar({ isAdmin = false }) {
             variant="ghost"
             size="icon"
             className="text-yellow-400 hover:text-yellow-300"
-            onClick={() => handleNavigation("/")}
+            onClick={() => router.push("/")}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
