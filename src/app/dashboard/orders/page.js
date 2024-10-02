@@ -375,7 +375,7 @@ export default function OrdersPage() {
                                     </Button>
                                   )}
                                 <Button asChild variant="outline" size="sm">
-                                  <Link href={`/orders/${order._id}`}>
+                                  <Link href={`/dashboard/orders/${order._id}`}>
                                     <Eye className="w-4 h-4 mr-2" />
                                     Show Order
                                   </Link>
